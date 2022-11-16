@@ -69,11 +69,11 @@ CLASS lcl_report DEFINITION.
                accnt       TYPE ususerall-accnt,
                ustyp       TYPE ususerall-ustyp,
                erdat       TYPE xuerdat,
-               trdat       TYPE xuldate_alv,
+               trdat       TYPE XULDATE,
                ltime       TYPE xultime,
                icon_locked TYPE xuuflag_alv,
                lock_reason TYPE xuureason_alv,
-               string      TYPE string,
+               COMMENT      TYPE COMMENT,
              END OF w_outtab.
 
     DATA :it_tab_ca       TYPE   STANDARD TABLE OF w_tab_ca,
@@ -190,6 +190,7 @@ CLASS lcl_report IMPLEMENTATION.
     REFRESH <lt_data>.
     FREE <lt_data>.
     CLEAR lr_data.
+    data: v_dats type dats.
 
     IF it_tab_ca[] IS NOT INITIAL
     AND it_tab_rsusr200[] IS NOT INITIAL.
@@ -208,12 +209,13 @@ CLASS lcl_report IMPLEMENTATION.
         CLEAR: wa_tab_rsusr200.
         READ TABLE it_tab_rsusr200 INTO wa_tab_rsusr200 WITH KEY bname = wa_tab_ca-bname.
 
+*        v_dats = wa_tab_rsusr200-trdat.
         wa_outtab-erdat = wa_tab_rsusr200-erdat.
         wa_outtab-trdat = wa_tab_rsusr200-trdat.
         wa_outtab-ltime = wa_tab_rsusr200-ltime.
         wa_outtab-icon_locked = wa_tab_rsusr200-icon_locked.
         wa_outtab-lock_reason = wa_tab_rsusr200-lock_reason.
-        wa_outtab-string = ''.
+        wa_outtab-COMMENT = ''.
 
         APPEND wa_outtab TO it_outtab.
 
@@ -322,7 +324,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
               et_fieldcatalog = ls_fieldcat.
 
           LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
-            IF <fs_alv_fieldcat>-fieldname = 'STRING'.
+            IF <fs_alv_fieldcat>-fieldname = 'COMMENT'.
               <fs_alv_fieldcat>-coltext = 'Initial analysis'.
               IF <fs_alv_fieldcat>-edit = abap_false.
                 <fs_alv_fieldcat>-edit = 'X'.
@@ -361,7 +363,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
     ASSIGN er_data_changed->mp_mod_rows->* TO <ft_mod_rows>.
 
     READ TABLE <ft_mod_rows> ASSIGNING <fs_mod_rows> INDEX 1.
-    ASSIGN COMPONENT 'STRING' OF STRUCTURE <fs_mod_rows> TO <fs>.
+    ASSIGN COMPONENT 'COMMENT' OF STRUCTURE <fs_mod_rows> TO <fs>.
 
     lt_mod_cells = er_data_changed->mt_mod_cells.
     READ TABLE lt_mod_cells INTO ls_mod_cells INDEX 1.
