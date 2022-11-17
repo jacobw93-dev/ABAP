@@ -1,8 +1,11 @@
-*&---------------------------------------------------------------------*
-*& Report Z_SUIM_CA_CUSTOM_REP_OO
-*&---------------------------------------------------------------------*
-*&
-*&---------------------------------------------------------------------*
+***********************************************************************
+* Report Z_SUIM_CA_CUSTOM_REP_OO                                      *
+*                                                                     *
+***********************************************************************
+* Created on: 16.11.2022                                              *
+* Created by: Jakub Walczak (jakub.walczak@lingarogroup.com)          *
+*                                                                     *
+***********************************************************************
 REPORT z_suim_ca_custom_rep_oo.
 
 CLASS lcl_salv_model DEFINITION INHERITING FROM cl_salv_model_list.
@@ -407,9 +410,9 @@ CLASS lcl_event_handler IMPLEMENTATION.
 
     lt_mod_cells = er_data_changed->mt_mod_cells.
     READ TABLE lt_mod_cells INTO ls_mod_cells INDEX 1.
-
-    lv_message = |Changed comments: { ls_mod_cells-value };|.
-    MESSAGE lv_message TYPE 'S'.
-
+    IF ls_mod_cells-value <> ''.
+      lv_message = |Changed comments to: "{ ls_mod_cells-value }"|.
+      MESSAGE lv_message TYPE 'S'.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.
