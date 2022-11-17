@@ -258,7 +258,7 @@ CLASS lcl_report IMPLEMENTATION.
     lo_columns->set_optimize( ).
 
 
-    " Change the properties of the Columns TEXT1000
+    " Change the properties of the columns
     TRY.
         lo_column = lo_columns->get_column( 'AUTH_ID' ).
         lo_column->set_long_text( 'ID of Critical Authorization (CA)' ).
@@ -278,7 +278,6 @@ CLASS lcl_report IMPLEMENTATION.
         lo_column = lo_columns->get_column( 'TEXT1000' ).
         lo_column->set_long_text( 'Initial analysis' ).
         lo_column->set_medium_text( 'Initial analysis' ).
-*        lo_column->set_short_text( 'Init a' ).
         lo_column->set_output_length( 250 ).
         CLEAR: lo_column.
         lo_column = lo_columns->get_column( 'SYSTEMID' ).
@@ -288,7 +287,7 @@ CLASS lcl_report IMPLEMENTATION.
         lo_column = lo_columns->get_column( 'SYSNAME' ).
         lo_column->set_long_text( 'System name' ).
         lo_column->set_medium_text( 'System name' ).
-      CATCH cx_salv_not_found.                          "#EC NO_HANDLER
+      CATCH cx_salv_not_found.
     ENDTRY.
 
     lo_salv_table->set_screen_status(
@@ -311,22 +310,6 @@ CLASS lcl_report IMPLEMENTATION.
     lo_salv_table->get_layout( )->set_default( abap_true ).
     lo_salv_table->get_layout( )->set_save_restriction( if_salv_c_layout=>restrict_none ).
     lo_functions = lo_salv_table->get_functions( ).
-
-*    l_text = 'Edit'.
-*    l_icon = icon_edit_file.
-*
-*    TRY.
-*        lo_functions->add_function(
-*          name     = 'ZEDIT'
-*          icon     = l_icon
-*          text     = l_text
-*          tooltip  = l_text
-*          position = if_salv_c_function_position=>right_of_salv_functions ).
-*      CATCH cx_salv_existing cx_salv_wrong_call.
-*    ENDTRY.
-
-*    lo_functions->set_function( NAME = 'ZEDIT' BOOLEAN = 'X' ).
-
     lo_functions->set_all( abap_true ).
     lo_salv_table->display( ).
 
@@ -404,11 +387,8 @@ CLASS lcl_event_handler IMPLEMENTATION.
             EXPORTING
               is_layout = ls_layout.
           CALL METHOD lo_grid->refresh_table_display.
-          MESSAGE 'Data saved' TYPE 'I'.
+          MESSAGE 'Data saved (temporary)' TYPE 'I'.
         ENDIF.
-      WHEN 'EXPORT'.
-
-
     ENDCASE.
   ENDMETHOD.
   METHOD handle_data_changed.
