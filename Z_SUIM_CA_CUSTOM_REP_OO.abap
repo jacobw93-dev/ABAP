@@ -92,16 +92,16 @@ CLASS lcl_report DEFINITION.
           wa_tab_rsusr200 TYPE w_tab_rsusr200,
           wa_outtab       TYPE w_outtab,
           lr_data         TYPE REF TO data,
-          lo_salv         TYPE REF TO cl_salv_table,
+          lo_salv_table   TYPE REF TO cl_salv_table,
           lo_salv_model   TYPE REF TO lcl_salv_model,
-          lr_functions    TYPE REF TO cl_salv_functions,
+          lo_functions    TYPE REF TO cl_salv_functions,
           lo_columns      TYPE REF TO cl_salv_columns_table,
           lo_column       TYPE REF TO cl_salv_column,
           lo_events       TYPE REF TO cl_salv_events_table,
           lo_event_h      TYPE REF TO lcl_event_handler,
-          lo_alv_mod      TYPE REF TO cl_salv_model.
-*          l_text       TYPE string,
-*          l_icon       TYPE string.
+          lo_alv_mod      TYPE REF TO cl_salv_model,
+          l_text          TYPE string,
+          l_icon          TYPE string.
 
     METHODS:
       generate_output.
@@ -248,27 +248,13 @@ CLASS lcl_report IMPLEMENTATION.
         cl_salv_table=>factory( EXPORTING
                                         list_display = abap_false
 *                                        r_container  = container
-*                                        container_name = 'CONTAINER'
-                                IMPORTING  r_salv_table   = lo_salv
+                                        container_name = 'CONTAINER'
+                                IMPORTING  r_salv_table   = lo_salv_table
                                 CHANGING   t_table        = it_outtab  ).
       CATCH cx_salv_msg.
     ENDTRY.
 
-*    l_text = 'Edit'.
-*    l_icon = icon_edit_file.
-*
-*    TRY.
-*        lr_functions->add_function(
-*          name     = 'EDIT'
-*          icon     = l_icon
-*          text     = l_text
-*          tooltip  = l_text
-*          position = if_salv_c_function_position=>right_of_salv_functions ).
-*      CATCH cx_salv_existing cx_salv_wrong_call.
-*    ENDTRY.
-
-
-    lo_columns = lo_salv->get_columns( ).
+    lo_columns = lo_salv_table->get_columns( ).
     lo_columns->set_optimize( ).
 
 
@@ -305,29 +291,44 @@ CLASS lcl_report IMPLEMENTATION.
       CATCH cx_salv_not_found.                          "#EC NO_HANDLER
     ENDTRY.
 
-    lo_salv->set_screen_status(
-      pfstatus      =  'SALV_STANDARD'
-      report        =  'SALV_DEMO_TABLE_FUNCTIONS'
-      set_functions = lo_salv->c_functions_all ).
+    lo_salv_table->set_screen_status(
+      pfstatus      =  'ZCAREPSTATUS'
+      report        =  sy-repid
+      set_functions = lo_salv_table->c_functions_all ).
 
 
-    lo_events = lo_salv->get_event( ).
+    lo_events = lo_salv_table->get_event( ).
     CREATE OBJECT lo_event_h.
     SET HANDLER lo_event_h->on_user_command FOR lo_events.
 
-    lo_alv_mod ?= lo_salv.
+    lo_alv_mod ?= lo_salv_table.
     CREATE OBJECT lo_salv_model.
     CALL METHOD lo_salv_model->grabe_model
       EXPORTING
         io_model = lo_alv_mod.
 
-    lo_salv->get_layout( )->set_key( VALUE #( report = sy-repid ) ).
-    lo_salv->get_layout( )->set_default( abap_true ).
-    lo_salv->get_layout( )->set_save_restriction( if_salv_c_layout=>restrict_none ).
-    lr_functions = lo_salv->get_functions( ).
-    lr_functions->set_all( abap_true ).
+    lo_salv_table->get_layout( )->set_key( VALUE #( report = sy-repid ) ).
+    lo_salv_table->get_layout( )->set_default( abap_true ).
+    lo_salv_table->get_layout( )->set_save_restriction( if_salv_c_layout=>restrict_none ).
+    lo_functions = lo_salv_table->get_functions( ).
 
-    lo_salv->display( ).
+*    l_text = 'Edit'.
+*    l_icon = icon_edit_file.
+*
+*    TRY.
+*        lo_functions->add_function(
+*          name     = 'ZEDIT'
+*          icon     = l_icon
+*          text     = l_text
+*          tooltip  = l_text
+*          position = if_salv_c_function_position=>right_of_salv_functions ).
+*      CATCH cx_salv_existing cx_salv_wrong_call.
+*    ENDTRY.
+
+*    lo_functions->set_function( NAME = 'ZEDIT' BOOLEAN = 'X' ).
+
+    lo_functions->set_all( abap_true ).
+    lo_salv_table->display( ).
 
   ENDMETHOD.
 ENDCLASS.
@@ -350,10 +351,11 @@ CLASS lcl_event_handler IMPLEMENTATION.
   METHOD on_user_command.
 
     FIELD-SYMBOLS <fs_alv_fieldcat> LIKE LINE OF ls_fieldcat.
+    ls_layout-cwidth_opt = 'X'.
 
     CASE e_salv_function.
         " Make ALV as Editable ALV
-      WHEN 'MYFUNCTION'.
+      WHEN 'CHANGE'.
         CALL METHOD lo_report->lo_salv_model->grabe_controller.
         CALL METHOD lo_report->lo_salv_model->grabe_adapter.
         lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
@@ -361,39 +363,52 @@ CLASS lcl_event_handler IMPLEMENTATION.
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
         SET HANDLER handle_data_changed FOR lo_grid.
-
         IF lo_grid IS BOUND.
           " Editable ALV
 *          ls_layout-edit = 'X'.
-          ls_layout-cwidth_opt = 'X'.
           CALL METHOD lo_grid->get_frontend_fieldcatalog
             IMPORTING
               et_fieldcatalog = ls_fieldcat.
-
           LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
             IF <fs_alv_fieldcat>-fieldname = 'TEXT1000'.
               <fs_alv_fieldcat>-outputlen = 250.
-              IF <fs_alv_fieldcat>-edit = abap_false.
-                <fs_alv_fieldcat>-edit = 'X'.
-              ELSE.
-                CLEAR <fs_alv_fieldcat>-edit.
-              ENDIF.
+              <fs_alv_fieldcat>-edit = 'X'.
             ENDIF.
           ENDLOOP.
-
           CALL METHOD lo_grid->set_frontend_fieldcatalog
             EXPORTING
               it_fieldcatalog = ls_fieldcat.
-
           CALL METHOD lo_grid->set_frontend_layout
             EXPORTING
               is_layout = ls_layout.
-
           " refresh the table
           CALL METHOD lo_grid->refresh_table_display.
         ENDIF.
-*      WHEN 'SAVE'.
-*        MESSAGE 'Here we save "t_data" to database' TYPE 'W'.
+      WHEN 'SAVE'.
+        IF lo_grid IS BOUND.
+          CALL METHOD lo_report->lo_salv_model->grabe_controller.
+          CALL METHOD lo_report->lo_salv_model->grabe_adapter.
+          lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
+          lo_grid = lo_full_adap->get_grid( ).
+          lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
+          lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
+          SET HANDLER handle_data_changed FOR lo_grid.
+*        ls_layout-edit = abap_false.
+          LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
+            CLEAR <fs_alv_fieldcat>-edit.
+          ENDLOOP.
+          CALL METHOD lo_grid->set_frontend_fieldcatalog
+            EXPORTING
+              it_fieldcatalog = ls_fieldcat.
+          CALL METHOD lo_grid->set_frontend_layout
+            EXPORTING
+              is_layout = ls_layout.
+          CALL METHOD lo_grid->refresh_table_display.
+          MESSAGE 'Data saved' TYPE 'I'.
+        ENDIF.
+      WHEN 'EXPORT'.
+
+
     ENDCASE.
   ENDMETHOD.
   METHOD handle_data_changed.
