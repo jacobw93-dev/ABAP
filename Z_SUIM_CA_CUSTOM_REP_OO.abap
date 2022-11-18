@@ -12,7 +12,7 @@ CLASS lcl_salv_model DEFINITION INHERITING FROM cl_salv_model_list.
   PUBLIC SECTION.
     DATA: lo_control TYPE REF TO cl_salv_controller_model,
           lo_adapter TYPE REF TO cl_salv_adapter,
-          lo_model TYPE REF TO cl_salv_model.
+          lo_model   TYPE REF TO cl_salv_model.
     METHODS:
       grabe_model
         IMPORTING
@@ -87,24 +87,26 @@ CLASS lcl_report DEFINITION.
                ticket        TYPE string,
              END OF __ty_salv_1.
 
-    DATA :lt_ca         TYPE   STANDARD TABLE OF __ty_ca,
+    DATA :lo_alv_mod    TYPE REF TO cl_salv_model,
+          lo_col_list   TYPE REF TO cl_salv_column_list,
+          lo_column     TYPE REF TO cl_salv_column,
+          lo_columns    TYPE REF TO cl_salv_columns_table,
+          lo_data       TYPE REF TO data,
+          lo_event_h    TYPE REF TO lcl_event_handler,
+          lo_events     TYPE REF TO cl_salv_events_table,
+          lo_functions  TYPE REF TO cl_salv_functions,
+          lo_salv_model TYPE REF TO lcl_salv_model,
+          lo_salv_table TYPE REF TO cl_salv_table,
+          ls_display    TYPE REF TO cl_salv_display_settings,
+          ls_color      TYPE lvc_s_colo,
+          lt_ca         TYPE   STANDARD TABLE OF __ty_ca,
           lt_rsusr200   TYPE   STANDARD TABLE OF __ty_rsusr200,
           lt_salv_1     TYPE   STANDARD TABLE OF __ty_salv_1,
+          lv_icon       TYPE string,
+          lv_text       TYPE string,
           wa_ca         TYPE __ty_ca,
           wa_rsusr200   TYPE __ty_rsusr200,
-          wa_salv_1     TYPE __ty_salv_1,
-          lr_data       TYPE REF TO data,
-          lo_salv_table TYPE REF TO cl_salv_table,
-          lo_salv_model TYPE REF TO lcl_salv_model,
-          lo_functions  TYPE REF TO cl_salv_functions,
-          lo_columns    TYPE REF TO cl_salv_columns_table,
-          lo_column     TYPE REF TO cl_salv_column,
-          lo_col_list   TYPE REF TO cl_salv_column_list,
-          lo_events     TYPE REF TO cl_salv_events_table,
-          lo_event_h    TYPE REF TO lcl_event_handler,
-          lo_alv_mod    TYPE REF TO cl_salv_model,
-          lv_text       TYPE string,
-          lv_icon       TYPE string.
+          wa_salv_1     TYPE __ty_salv_1.
 
     METHODS:
       generate_output.
@@ -127,6 +129,9 @@ CLASS lcl_report IMPLEMENTATION.
                      <lt_tab>  TYPE any.
 
     DATA: lv_systype(10) TYPE c.
+
+    ls_color-col = 0.
+    ls_color-int = 0.
 
     SELECT  name  FROM swfeature
       ORDER BY mod_date
@@ -153,10 +158,10 @@ CLASS lcl_report IMPLEMENTATION.
     AND RETURN.
 
     TRY.
-        cl_salv_bs_runtime_info=>get_data_ref( IMPORTING r_data = lr_data ).
-        ASSIGN lr_data->* TO <lt_data>.
+        cl_salv_bs_runtime_info=>get_data_ref( IMPORTING r_data = lo_data ).
+        ASSIGN lo_data->* TO <lt_data>.
       CATCH cx_salv_bs_sc_runtime_info.
-        MESSAGE TEXT-M02 TYPE 'E'.
+        MESSAGE TEXT-m02 TYPE 'E'.
     ENDTRY.
 
     cl_salv_bs_runtime_info=>clear_all( ).
@@ -168,7 +173,7 @@ CLASS lcl_report IMPLEMENTATION.
 
     REFRESH <lt_data>.
     FREE <lt_data>.
-    CLEAR lr_data.
+    CLEAR lo_data.
 
     cl_salv_bs_runtime_info=>set(
      EXPORTING
@@ -200,10 +205,10 @@ CLASS lcl_report IMPLEMENTATION.
     AND RETURN.
 
     TRY.
-        cl_salv_bs_runtime_info=>get_data_ref( IMPORTING r_data = lr_data ).
-        ASSIGN lr_data->* TO <lt_data>.
+        cl_salv_bs_runtime_info=>get_data_ref( IMPORTING r_data = lo_data ).
+        ASSIGN lo_data->* TO <lt_data>.
       CATCH cx_salv_bs_sc_runtime_info.
-        MESSAGE TEXT-M02 TYPE 'E'.
+        MESSAGE TEXT-m02 TYPE 'E'.
     ENDTRY.
 
     cl_salv_bs_runtime_info=>clear_all( ).
@@ -217,7 +222,7 @@ CLASS lcl_report IMPLEMENTATION.
 
     REFRESH <lt_data>.
     FREE <lt_data>.
-    CLEAR lr_data.
+    CLEAR lo_data.
 
     " join 2 internal tables
     IF lt_ca[] IS NOT INITIAL
@@ -268,39 +273,83 @@ CLASS lcl_report IMPLEMENTATION.
 
     lo_columns = lo_salv_table->get_columns( ).
     lo_columns->set_optimize( ).
+    ls_display = lo_salv_table->get_display_settings( ).
+    ls_display->set_striped_pattern( 'X' ).
 
     " Change the properties of the columns
     TRY.
         lo_column = lo_columns->get_column( 'SYSNAME' ).
         lo_column->set_long_text( 'System name' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'SYSTEMID' ).
         lo_column->set_long_text( 'System ID' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'AUTH_ID' ).
         lo_column->set_long_text( 'ID of Critical Authorization (CA)' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'TEXT' ).
         lo_column->set_long_text( 'Text of Critical Authorization (CA)' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'BNAME' ).
         lo_column->set_long_text( 'User Name' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'NAME_TEXT' ).
         lo_column->set_long_text( 'Full Name' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'CLASS' ).
         lo_column->set_long_text( 'User Group (General)' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'ERDAT' ).
         lo_column->set_long_text( 'Creation Date' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'INIT_ANALYSIS' ).
         lo_column->set_long_text( 'Initial analysis' ).
+        lo_col_list ?= lo_columns->get_column( 'INIT_ANALYSIS' ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'APPROVAL' ).
         lo_column->set_short_text( 'Approval' ).
         lo_col_list ?= lo_columns->get_column( 'APPROVAL' ).
-        lo_col_list->set_cell_type( if_salv_c_cell_type=>checkbox_hotspot ).
+        lo_col_list->set_cell_type( if_salv_c_cell_type=>checkbox ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_col_list ?= lo_columns->get_column( 'ICON_LOCKED' ).
         lo_col_list->set_icon( if_salv_c_bool_sap=>true ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'COMMENT' ).
         lo_column->set_long_text( 'Comments/Remedial Actions' ).
+        lo_col_list ?= lo_columns->get_column( 'COMMENT' ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
         lo_column = lo_columns->get_column( 'TICKET' ).
         lo_column->set_long_text( 'Follow-Up Ticket' ).
+        lo_col_list ?= lo_columns->get_column( 'TICKET' ).
+        lo_col_list->set_color(  value = ls_color  ).
         CLEAR: lo_column, lo_col_list.
-
       CATCH cx_salv_not_found.
     ENDTRY.
 
@@ -332,7 +381,7 @@ ENDCLASS.
 
 CLASS lcl_salv_model IMPLEMENTATION.
   METHOD grabe_model.
-    lo_model = io_model.
+    lo_model ?= io_model.
   ENDMETHOD.                    "grabe_model
   METHOD grabe_controller.
     lo_control = lo_model->r_controller.
@@ -360,7 +409,6 @@ CLASS lcl_event_handler IMPLEMENTATION.
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
         IF lo_grid IS BOUND.
           " Editable ALV
-*          ls_layout-edit = 'X'.
           CALL METHOD lo_grid->get_frontend_fieldcatalog
             IMPORTING
               et_fieldcatalog = ls_fieldcat.
@@ -370,6 +418,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
                 <fs_alv_fieldcat>-edit = 'X'.
               WHEN 'APPROVAL'.
                 <fs_alv_fieldcat>-edit = 'X'.
+                <fs_alv_fieldcat>-hotspot = 'X'.
                 <fs_alv_fieldcat>-checkbox = 'X'.
                 <fs_alv_fieldcat>-tooltip = 'Approval'.
             ENDCASE.
@@ -384,15 +433,15 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CALL METHOD lo_grid->refresh_table_display.
         ENDIF.
       WHEN 'SAVE'.
+        CALL METHOD lo_report->lo_salv_model->grabe_controller.
+        CALL METHOD lo_report->lo_salv_model->grabe_adapter.
+        lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
+        lo_grid = lo_full_adap->get_grid( ).
+        lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
+        lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
         IF lo_grid IS BOUND.
-          CALL METHOD lo_report->lo_salv_model->grabe_controller.
-          CALL METHOD lo_report->lo_salv_model->grabe_adapter.
-          lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
-          lo_grid = lo_full_adap->get_grid( ).
-          lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
-          lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
           LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
-            CLEAR <fs_alv_fieldcat>-edit.
+            CLEAR: <fs_alv_fieldcat>-edit, <fs_alv_fieldcat>-hotspot.
           ENDLOOP.
           CALL METHOD lo_grid->set_frontend_fieldcatalog
             EXPORTING
@@ -403,11 +452,15 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CALL METHOD lo_grid->refresh_table_display.
           MESSAGE TEXT-m01 TYPE 'I'.
         ENDIF.
+      WHEN 'EXIT'.
+        LEAVE PROGRAM.
     ENDCASE.
   ENDMETHOD.
+
   METHOD on_link_click.
 
     FIELD-SYMBOLS: <lfa_data> LIKE LINE OF lo_report->lt_salv_1.
+
     READ TABLE lo_report->lt_salv_1 ASSIGNING <lfa_data> INDEX row.
     CHECK sy-subrc IS INITIAL.
     IF <lfa_data>-approval IS INITIAL.
