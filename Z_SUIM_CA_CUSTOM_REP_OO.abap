@@ -65,48 +65,55 @@ CLASS lcl_report DEFINITION.
              END OF __ty_rsusr200,
 
              BEGIN OF __ty_salv_1,
-               sysname       TYPE c LENGTH 10,
-               systemid      TYPE sy-sysid,
-               auth_id       TYPE uscraut-auth_id,
-               text          TYPE uscrauidt-text,
-               bname         TYPE ususerall-bname,
-               name_text     TYPE ususerall-name_text,
-               class         TYPE ususerall-class,
-               gltgv         TYPE ususerall-gltgv,
-               gltgb         TYPE ususerall-gltgb,
-               accnt         TYPE ususerall-accnt,
-               ustyp         TYPE ususerall-ustyp,
-               erdat         TYPE xuerdat,
-               trdat         TYPE xuldate,
-               ltime         TYPE xultime,
-               icon_locked   TYPE xuuflag_alv,
-               lock_reason   TYPE xuureason_alv,
-               init_analysis TYPE string,
-               approval      TYPE abap_bool,
-               comment       TYPE string,
-               ticket        TYPE string,
+               sysname             TYPE c LENGTH 10,
+               systemid            TYPE sy-sysid,
+               auth_id             TYPE uscraut-auth_id,
+               text                TYPE uscrauidt-text,
+               bname               TYPE ususerall-bname,
+               name_text           TYPE ususerall-name_text,
+               class               TYPE ususerall-class,
+               gltgv               TYPE ususerall-gltgv,
+               gltgb               TYPE ususerall-gltgb,
+               accnt               TYPE ususerall-accnt,
+               ustyp               TYPE ususerall-ustyp,
+               erdat               TYPE xuerdat,
+               trdat               TYPE xuldate,
+               ltime               TYPE xultime,
+               icon_locked         TYPE xuuflag_alv,
+               lock_reason         TYPE xuureason_alv,
+               init_analysis_part1 TYPE string,
+               init_analysis_part2 TYPE string,
+               init_analysis_part3 TYPE string,
+               init_analysis_part4 TYPE string,
+               approval            TYPE abap_bool,
+               comment_part1       TYPE string,
+               comment_part2       TYPE string,
+               ticket_part1        TYPE string,
+               ticket_part2        TYPE string,
              END OF __ty_salv_1.
 
-    DATA :lo_alv_mod    TYPE REF TO cl_salv_model,
-          lo_col_list   TYPE REF TO cl_salv_column_list,
-          lo_column     TYPE REF TO cl_salv_column,
-          lo_columns    TYPE REF TO cl_salv_columns_table,
-          lo_data       TYPE REF TO data,
-          lo_event_h    TYPE REF TO lcl_event_handler,
-          lo_events     TYPE REF TO cl_salv_events_table,
-          lo_functions  TYPE REF TO cl_salv_functions,
-          lo_salv_model TYPE REF TO lcl_salv_model,
-          lo_salv_table TYPE REF TO cl_salv_table,
-          ls_color      TYPE lvc_s_colo,
-          ls_display    TYPE REF TO cl_salv_display_settings,
-          lt_ca         TYPE   STANDARD TABLE OF __ty_ca,
-          lt_rsusr200   TYPE   STANDARD TABLE OF __ty_rsusr200,
-          lt_salv_1     TYPE   STANDARD TABLE OF __ty_salv_1,
-          lv_icon       TYPE string,
-          lv_text       TYPE string,
-          wa_ca         TYPE __ty_ca,
-          wa_rsusr200   TYPE __ty_rsusr200,
-          wa_salv_1     TYPE __ty_salv_1.
+    DATA :lo_alv_mod     TYPE REF TO cl_salv_model,
+          lo_col_list    TYPE REF TO cl_salv_column_list,
+          lo_column      TYPE REF TO cl_salv_column,
+          lo_columns     TYPE REF TO cl_salv_columns_table,
+          lo_data        TYPE REF TO data,
+          lo_event_h     TYPE REF TO lcl_event_handler,
+          lo_events      TYPE REF TO cl_salv_events_table,
+          lo_functions   TYPE REF TO cl_salv_functions,
+          lo_salv_model  TYPE REF TO lcl_salv_model,
+          lo_salv_table  TYPE REF TO cl_salv_table,
+          ls_color       TYPE lvc_s_colo,
+          ls_display     TYPE REF TO cl_salv_display_settings,
+          lt_ca          TYPE   STANDARD TABLE OF __ty_ca,
+          lt_rsusr200    TYPE   STANDARD TABLE OF __ty_rsusr200,
+          lt_salv_1      TYPE   STANDARD TABLE OF __ty_salv_1,
+          lt_ca_cust_tab TYPE TABLE OF zsuimca_cust_tab WITH KEY auth_id bname,
+          lv_icon        TYPE string,
+          lv_text        TYPE string,
+          wa_ca          TYPE __ty_ca,
+          wa_rsusr200    TYPE __ty_rsusr200,
+          wa_salv_1      TYPE __ty_salv_1,
+          wa_ca_cust_tab LIKE LINE OF lt_ca_cust_tab.
 
     METHODS:
       generate_output.
@@ -130,8 +137,11 @@ CLASS lcl_report IMPLEMENTATION.
 
     DATA: lv_systype(10) TYPE c.
 
-    ls_color-col = 0.
+    ls_color-col = 3.
     ls_color-int = 0.
+
+    SELECT * FROM zsuimca_cust_tab
+    INTO CORRESPONDING FIELDS OF TABLE lt_ca_cust_tab.
 
     SELECT  name  FROM swfeature
       ORDER BY mod_date
@@ -241,18 +251,24 @@ CLASS lcl_report IMPLEMENTATION.
         wa_salv_1-accnt = wa_ca-accnt.
         wa_salv_1-ustyp = wa_ca-ustyp.
 
-        CLEAR: wa_rsusr200.
+        CLEAR: wa_rsusr200, wa_ca_cust_tab.
         READ TABLE lt_rsusr200 INTO wa_rsusr200 WITH KEY bname = wa_ca-bname.
+        READ TABLE lt_ca_cust_tab INTO wa_ca_cust_tab WITH KEY bname = wa_ca-bname auth_id = wa_ca-auth_id.
 
         wa_salv_1-erdat = wa_rsusr200-erdat.
         wa_salv_1-trdat = wa_rsusr200-trdat.
         wa_salv_1-ltime = wa_rsusr200-ltime.
         wa_salv_1-icon_locked = wa_rsusr200-icon_locked.
         wa_salv_1-lock_reason = wa_rsusr200-lock_reason.
-        wa_salv_1-init_analysis = ''.
-        wa_salv_1-approval = ''.
-        wa_salv_1-comment = ''.
-        wa_salv_1-ticket = ''.
+        wa_salv_1-init_analysis_part1 = wa_ca_cust_tab-init_analysis_part1.
+        wa_salv_1-init_analysis_part2 = wa_ca_cust_tab-init_analysis_part2.
+        wa_salv_1-init_analysis_part3 = wa_ca_cust_tab-init_analysis_part3.
+        wa_salv_1-init_analysis_part4 = wa_ca_cust_tab-init_analysis_part4.
+        wa_salv_1-approval = wa_ca_cust_tab-approval.
+        wa_salv_1-comment_part1 = wa_ca_cust_tab-comment_part1.
+        wa_salv_1-comment_part2 = wa_ca_cust_tab-comment_part2.
+        wa_salv_1-ticket_part1 = wa_ca_cust_tab-ticket_part1.
+        wa_salv_1-ticket_part2 = wa_ca_cust_tab-ticket_part2.
 
         APPEND wa_salv_1 TO lt_salv_1.
 
@@ -279,59 +295,42 @@ CLASS lcl_report IMPLEMENTATION.
     " Change the properties of the columns
     TRY.
         lo_column = lo_columns->get_column( 'SYSNAME' ).
-        lo_column->set_long_text( 'System name' ).
+        lo_column->set_long_text( TEXT-c01 ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
         lo_column = lo_columns->get_column( 'SYSTEMID' ).
-        lo_column->set_long_text( 'System ID' ).
+        lo_column->set_long_text( TEXT-c02 ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
         lo_column = lo_columns->get_column( 'AUTH_ID' ).
-        lo_column->set_long_text( 'ID of Critical Authorization (CA)' ).
+        lo_column->set_long_text( TEXT-c03 ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
         lo_column = lo_columns->get_column( 'TEXT' ).
-        lo_column->set_long_text( 'Text of Critical Authorization (CA)' ).
+        lo_column->set_long_text( TEXT-c04 ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
         lo_column = lo_columns->get_column( 'BNAME' ).
-        lo_column->set_long_text( 'User Name' ).
+        lo_column->set_long_text( TEXT-c05 ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
         lo_column = lo_columns->get_column( 'NAME_TEXT' ).
-        lo_column->set_long_text( 'Full Name' ).
+        lo_column->set_long_text( TEXT-c06 ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
         lo_column = lo_columns->get_column( 'CLASS' ).
-        lo_column->set_long_text( 'User Group (General)' ).
+        lo_column->set_long_text( TEXT-c07 ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
         lo_column = lo_columns->get_column( 'ERDAT' ).
-        lo_column->set_long_text( 'Creation Date' ).
-      CATCH cx_salv_not_found.
-    ENDTRY.
-    TRY.
-        lo_column = lo_columns->get_column( 'INIT_ANALYSIS' ).
-        lo_column->set_long_text( 'Initial analysis' ).
-        lo_col_list ?= lo_columns->get_column( 'INIT_ANALYSIS' ).
-        lo_col_list->set_color(  value = ls_color  ).
-      CATCH cx_salv_not_found.
-    ENDTRY.
-    TRY.
-        lo_column = lo_columns->get_column( 'APPROVAL' ).
-        lo_column->set_long_text( 'Approval' ).
-        lo_column->set_medium_text( 'Approval' ).
-        lo_column->set_short_text( 'Approval' ).
-        lo_col_list ?= lo_columns->get_column( 'APPROVAL' ).
-        lo_col_list->set_cell_type( if_salv_c_cell_type=>checkbox ).
-        lo_col_list->set_color(  value = ls_color  ).
+        lo_column->set_long_text( TEXT-c08 ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
@@ -340,16 +339,67 @@ CLASS lcl_report IMPLEMENTATION.
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
-        lo_column = lo_columns->get_column( 'COMMENT' ).
-        lo_column->set_long_text( 'Comments/Remedial Actions' ).
-        lo_col_list ?= lo_columns->get_column( 'COMMENT' ).
+        lo_column = lo_columns->get_column( 'INIT_ANALYSIS_PART1' ).
+        lo_column->set_long_text( TEXT-c09 ).
+        lo_col_list ?= lo_columns->get_column( 'INIT_ANALYSIS_PART1' ).
         lo_col_list->set_color(  value = ls_color  ).
       CATCH cx_salv_not_found.
     ENDTRY.
     TRY.
-        lo_column = lo_columns->get_column( 'TICKET' ).
-        lo_column->set_long_text( 'Follow-Up Ticket' ).
-        lo_col_list ?= lo_columns->get_column( 'TICKET' ).
+        lo_column = lo_columns->get_column( 'INIT_ANALYSIS_PART2' ).
+        lo_column->set_long_text( TEXT-c09 ).
+        lo_col_list ?= lo_columns->get_column( 'INIT_ANALYSIS_PART2' ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'INIT_ANALYSIS_PART3' ).
+        lo_column->set_long_text( TEXT-c09 ).
+        lo_col_list ?= lo_columns->get_column( 'INIT_ANALYSIS_PART3' ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'INIT_ANALYSIS_PART4' ).
+        lo_column->set_long_text( TEXT-c09 ).
+        lo_col_list ?= lo_columns->get_column( 'INIT_ANALYSIS_PART4' ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'APPROVAL' ).
+        lo_column->set_long_text( TEXT-c10 ).
+        lo_col_list ?= lo_columns->get_column( 'APPROVAL' ).
+        lo_col_list->set_cell_type( if_salv_c_cell_type=>checkbox ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'COMMENT_PART1' ).
+        lo_column->set_long_text( TEXT-c11 ).
+        lo_col_list ?= lo_columns->get_column( 'COMMENT_PART1' ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'COMMENT_PART2' ).
+        lo_column->set_long_text( TEXT-c11 ).
+        lo_col_list ?= lo_columns->get_column( 'COMMENT_PART2' ).
+        lo_col_list->set_color(  value = ls_color  ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'TICKET_PART1' ).
+        lo_column->set_long_text( TEXT-c12 ).
+        lo_col_list ?= lo_columns->get_column( 'TICKET_PART1' ).
+        lo_col_list->set_color(  value = ls_color  ).
+        CLEAR: lo_column, lo_col_list.
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'TICKET_PART2' ).
+        lo_column->set_long_text( TEXT-c12 ).
+        lo_col_list ?= lo_columns->get_column( 'TICKET_PART2' ).
         lo_col_list->set_color(  value = ls_color  ).
         CLEAR: lo_column, lo_col_list.
       CATCH cx_salv_not_found.
@@ -404,14 +454,12 @@ CLASS lcl_event_handler IMPLEMENTATION.
     FIELD-SYMBOLS <fs_alv_fieldcat> LIKE LINE OF ls_fieldcat.
     ls_layout-cwidth_opt = 'X'.
     ls_layout-zebra = 'X'.
-    ls_layout-no_toolbar = ''.
     CALL METHOD lo_report->lo_salv_model->grabe_controller.
     CALL METHOD lo_report->lo_salv_model->grabe_adapter.
     lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
     lo_grid = lo_full_adap->get_grid( ).
-    CALL METHOD lo_grid->set_toolbar_interactive( ).
     CALL METHOD lo_grid->refresh_table_display.
-
+*    CLEAR: ls_layout-cwidth_opt.
     CASE e_salv_function.
         " Make ALV as Editable ALV
       WHEN 'CHANGE'.
@@ -424,13 +472,13 @@ CLASS lcl_event_handler IMPLEMENTATION.
               et_fieldcatalog = ls_fieldcat.
           LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
             CASE <fs_alv_fieldcat>-fieldname.
-              WHEN 'INIT_ANALYSIS' OR 'COMMENT' OR 'TICKET'.
+              WHEN 'INIT_ANALYSIS_PART1' OR 'INIT_ANALYSIS_PART2' OR 'INIT_ANALYSIS_PART3' OR 'INIT_ANALYSIS_PART4'
+                OR 'COMMENT_PART1' OR 'COMMENT_PART2' OR 'TICKET_PART1' OR 'TICKET_PART2'.
                 <fs_alv_fieldcat>-edit = 'X'.
               WHEN 'APPROVAL'.
+                <fs_alv_fieldcat>-checkbox = 'X'.
                 <fs_alv_fieldcat>-edit = 'X'.
                 <fs_alv_fieldcat>-hotspot = 'X'.
-                <fs_alv_fieldcat>-checkbox = 'X'.
-                <fs_alv_fieldcat>-tooltip = 'Approval'.
             ENDCASE.
           ENDLOOP.
           CALL METHOD lo_grid->set_frontend_fieldcatalog
@@ -472,7 +520,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
     IF <lfa_data>-approval IS INITIAL.
       <lfa_data>-approval = 'X'.
     ELSE.
-      CLEAR <lfa_data>-approval.
+      CLEAR: <lfa_data>-approval.
     ENDIF.
     APPEND <lfa_data>  TO lo_report->lt_salv_1.
     lo_report->lo_salv_table->refresh( ).
