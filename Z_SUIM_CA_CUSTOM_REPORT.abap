@@ -3,7 +3,7 @@
 *&---------------------------------------------------------------------*
 *&
 *&---------------------------------------------------------------------*
-REPORT Z_SUIM_CA_CUSTOM_REPORT.
+REPORT z_suim_ca_custom_report.
 
 TYPES  : BEGIN OF w_tab_ca,
            auth_id   TYPE uscraut-auth_id,
@@ -28,34 +28,36 @@ TYPES  : BEGIN OF w_tab_ca,
          END OF w_tab_rsusr200,
 
          BEGIN OF w_outtab,
-           auth_id     TYPE uscraut-auth_id,
-           text        TYPE uscrauidt-text,
-           bname       TYPE ususerall-bname,
-           name_text   TYPE ususerall-name_text,
-           class       TYPE ususerall-class,
-           gltgv       TYPE ususerall-gltgv,
-           gltgb       TYPE ususerall-gltgb,
-           accnt       TYPE ususerall-accnt,
-           ustyp       TYPE ususerall-ustyp,
-           erdat       TYPE xuerdat,
-           trdat       TYPE xuldate_alv,
-           ltime       TYPE xultime,
-           icon_locked TYPE xuuflag_alv,
-           lock_reason TYPE xuureason_alv,
-           usr02flag   TYPE xuuflag,
+           auth_id          TYPE uscraut-auth_id,
+           text             TYPE uscrauidt-text,
+           bname            TYPE ususerall-bname,
+           name_text        TYPE ususerall-name_text,
+           class            TYPE ususerall-class,
+           gltgv            TYPE ususerall-gltgv,
+           gltgb            TYPE ususerall-gltgb,
+           accnt            TYPE ususerall-accnt,
+           ustyp            TYPE ususerall-ustyp,
+           erdat            TYPE xuerdat,
+           trdat            TYPE xuldate,
+           ltime            TYPE xultime,
+           icon_locked      TYPE xuuflag_alv,
+           lock_reason      TYPE xuureason_alv,
+           usr02flag        TYPE xuuflag,
+           initial_analysis TYPE string,
          END OF w_outtab.
 
 FIELD-SYMBOLS  : <lt_data> TYPE ANY TABLE,
                  <lt_tab>  TYPE any.
 
-DATA :it_tab_ca       TYPE   STANDARD TABLE OF w_tab_ca WITH HEADER LINE,
+DATA :it_outtab       TYPE   STANDARD TABLE OF w_outtab WITH HEADER LINE,
+      it_tab_ca       TYPE   STANDARD TABLE OF w_tab_ca WITH HEADER LINE,
       it_tab_rsusr200 TYPE   STANDARD TABLE OF w_tab_rsusr200 WITH HEADER LINE,
-      it_outtab       TYPE   STANDARD TABLE OF w_outtab WITH HEADER LINE,
-      wa_tab_ca       TYPE w_tab_ca,
-      wa_tab_rsusr200 TYPE w_tab_rsusr200,
-      wa_outtab       TYPE w_outtab,
+      lo_display      TYPE REF TO cl_salv_display_settings,
+      lo_table        TYPE REF TO cl_salv_table,
       lr_data         TYPE REF TO data,
-      gr_table        TYPE REF TO cl_salv_table.
+      wa_outtab       TYPE w_outtab,
+      wa_tab_ca       TYPE w_tab_ca,
+      wa_tab_rsusr200 TYPE w_tab_rsusr200.
 
 cl_salv_bs_runtime_info=>set(
  EXPORTING
@@ -164,6 +166,7 @@ AND it_tab_rsusr200[] IS NOT INITIAL.
     wa_outtab-icon_locked = wa_tab_rsusr200-icon_locked.
     wa_outtab-lock_reason = wa_tab_rsusr200-lock_reason.
     wa_outtab-usr02flag = wa_tab_rsusr200-usr02flag.
+    wa_outtab-initial_analysis = ''.
 
     APPEND wa_outtab TO it_outtab.
 
@@ -173,18 +176,22 @@ ENDIF.
 SORT it_outtab BY auth_id bname ASCENDING.
 
 TRY.
-    cl_salv_table=>factory( IMPORTING  r_salv_table   = gr_table
+    cl_salv_table=>factory( EXPORTING list_display = abap_false
+                            IMPORTING  r_salv_table   = lo_table
                             CHANGING   t_table        = it_outtab[]  ).
   CATCH cx_salv_msg.
 ENDTRY.
 
-gr_table->get_layout( )->set_key( VALUE #( report = sy-repid ) ).
-gr_table->get_layout( )->set_default( abap_true ).
-gr_table->get_layout( )->set_save_restriction( if_salv_c_layout=>restrict_none ).
-gr_table->get_functions( )->set_all( abap_true ).
+lo_table->get_layout( )->set_key( VALUE #( report = sy-repid ) ).
+lo_table->get_layout( )->set_default( abap_true ).
+lo_table->get_layout( )->set_save_restriction( if_salv_c_layout=>restrict_none ).
+lo_table->get_functions( )->set_all( abap_true ).
+lo_display = lo_table->get_display_settings( ).
+lo_display->set_striped_pattern( cl_salv_display_settings=>true ).
+
 
 DATA columns TYPE REF TO cl_salv_columns_table.
-columns = gr_table->get_columns( ).
+columns = lo_table->get_columns( ).
 columns->set_optimize( ).
 
-CALL METHOD gr_table->display.
+CALL METHOD lo_table->display.

@@ -97,8 +97,8 @@ CLASS lcl_report DEFINITION.
           lo_functions  TYPE REF TO cl_salv_functions,
           lo_salv_model TYPE REF TO lcl_salv_model,
           lo_salv_table TYPE REF TO cl_salv_table,
-          ls_display    TYPE REF TO cl_salv_display_settings,
           ls_color      TYPE lvc_s_colo,
+          ls_display    TYPE REF TO cl_salv_display_settings,
           lt_ca         TYPE   STANDARD TABLE OF __ty_ca,
           lt_rsusr200   TYPE   STANDARD TABLE OF __ty_rsusr200,
           lt_salv_1     TYPE   STANDARD TABLE OF __ty_salv_1,
@@ -326,6 +326,8 @@ CLASS lcl_report IMPLEMENTATION.
     ENDTRY.
     TRY.
         lo_column = lo_columns->get_column( 'APPROVAL' ).
+        lo_column->set_long_text( 'Approval' ).
+        lo_column->set_medium_text( 'Approval' ).
         lo_column->set_short_text( 'Approval' ).
         lo_col_list ?= lo_columns->get_column( 'APPROVAL' ).
         lo_col_list->set_cell_type( if_salv_c_cell_type=>checkbox ).
@@ -353,10 +355,13 @@ CLASS lcl_report IMPLEMENTATION.
       CATCH cx_salv_not_found.
     ENDTRY.
 
-    lo_salv_table->set_screen_status(
-      pfstatus      =  'ZCAREPSTATUS'
-      report        =  sy-repid
-      set_functions = lo_salv_table->c_functions_all ).
+    TRY.
+        lo_salv_table->set_screen_status(
+          pfstatus      =  'ZCAREPSTATUS'
+          report        =  sy-repid
+          set_functions = lo_salv_table->c_functions_all ).
+      CATCH cx_salv_msg.
+    ENDTRY.
 
     lo_events = lo_salv_table->get_event( ).
     CREATE OBJECT lo_event_h.
@@ -397,14 +402,14 @@ CLASS lcl_event_handler IMPLEMENTATION.
   METHOD on_user_command.
     FIELD-SYMBOLS <fs_alv_fieldcat> LIKE LINE OF ls_fieldcat.
     ls_layout-cwidth_opt = 'X'.
+    CALL METHOD lo_report->lo_salv_model->grabe_controller.
+    CALL METHOD lo_report->lo_salv_model->grabe_adapter.
+    lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
+    lo_grid = lo_full_adap->get_grid( ).
 
     CASE e_salv_function.
         " Make ALV as Editable ALV
       WHEN 'CHANGE'.
-        CALL METHOD lo_report->lo_salv_model->grabe_controller.
-        CALL METHOD lo_report->lo_salv_model->grabe_adapter.
-        lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
-        lo_grid = lo_full_adap->get_grid( ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
         IF lo_grid IS BOUND.
@@ -433,10 +438,6 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CALL METHOD lo_grid->refresh_table_display.
         ENDIF.
       WHEN 'SAVE'.
-        CALL METHOD lo_report->lo_salv_model->grabe_controller.
-        CALL METHOD lo_report->lo_salv_model->grabe_adapter.
-        lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
-        lo_grid = lo_full_adap->get_grid( ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
         IF lo_grid IS BOUND.
@@ -452,6 +453,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CALL METHOD lo_grid->refresh_table_display.
           MESSAGE TEXT-m01 TYPE 'I'.
         ENDIF.
+      WHEN 'EXPORT'.
       WHEN 'EXIT'.
         LEAVE PROGRAM.
     ENDCASE.
