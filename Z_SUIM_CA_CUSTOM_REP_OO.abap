@@ -82,7 +82,7 @@ CLASS lcl_report DEFINITION.
                icon_locked   TYPE xuuflag_alv,
                lock_reason   TYPE xuureason_alv,
                init_analysis TYPE string,
-               approval      TYPE flag,
+               approval      TYPE abap_bool,
                comment       TYPE string,
                ticket        TYPE string,
              END OF __ty_salv_1.
@@ -357,7 +357,7 @@ CLASS lcl_report IMPLEMENTATION.
 
     TRY.
         lo_salv_table->set_screen_status(
-          pfstatus      =  'ZCAREPSTATUS'
+          pfstatus      =  'SALV_STANDARD'
           report        =  sy-repid
           set_functions = lo_salv_table->c_functions_all ).
       CATCH cx_salv_msg.
@@ -379,6 +379,7 @@ CLASS lcl_report IMPLEMENTATION.
     lo_salv_table->get_layout( )->set_save_restriction( if_salv_c_layout=>restrict_none ).
     lo_functions = lo_salv_table->get_functions( ).
     lo_functions->set_all( abap_true ).
+
     lo_salv_table->display( ).
 
   ENDMETHOD.
@@ -402,10 +403,14 @@ CLASS lcl_event_handler IMPLEMENTATION.
   METHOD on_user_command.
     FIELD-SYMBOLS <fs_alv_fieldcat> LIKE LINE OF ls_fieldcat.
     ls_layout-cwidth_opt = 'X'.
+    ls_layout-zebra = 'X'.
+    ls_layout-no_toolbar = ''.
     CALL METHOD lo_report->lo_salv_model->grabe_controller.
     CALL METHOD lo_report->lo_salv_model->grabe_adapter.
     lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
     lo_grid = lo_full_adap->get_grid( ).
+    CALL METHOD lo_grid->set_toolbar_interactive( ).
+    CALL METHOD lo_grid->refresh_table_display.
 
     CASE e_salv_function.
         " Make ALV as Editable ALV
@@ -453,7 +458,6 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CALL METHOD lo_grid->refresh_table_display.
           MESSAGE TEXT-m01 TYPE 'I'.
         ENDIF.
-      WHEN 'EXPORT'.
       WHEN 'EXIT'.
         LEAVE PROGRAM.
     ENDCASE.
