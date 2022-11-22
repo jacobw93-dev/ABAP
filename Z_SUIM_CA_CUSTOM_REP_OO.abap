@@ -551,7 +551,6 @@ CLASS lcl_event_handler IMPLEMENTATION.
             EXPORTING
               is_layout = ls_layout.
 
-
           CALL FUNCTION 'ENQUEUE_E_TABLE'
             EXPORTING
               mode_rstable   = 'E'
@@ -592,10 +591,10 @@ CLASS lcl_event_handler IMPLEMENTATION.
               mode_rstable = 'E'
               tabname      = lv_cust_table_name.
 
-
           CALL METHOD lo_grid->check_changed_data.
           CALL METHOD lo_grid->refresh_table_display.
-          MESSAGE TEXT-m01 TYPE 'I'.
+          CONCATENATE TEXT-m01 lv_cust_table_name INTO lv_string SEPARATED BY space.
+          MESSAGE lv_string TYPE 'I'.
         ENDIF.
       WHEN 'EXIT'.
         LEAVE PROGRAM.
