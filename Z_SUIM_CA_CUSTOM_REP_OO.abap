@@ -137,7 +137,7 @@ CLASS lcl_report IMPLEMENTATION.
 
     DATA: lv_systype(10) TYPE c.
 
-    ls_color-col = 5.
+    ls_color-col = 0.
     ls_color-int = 0.
 
     SELECT * FROM zsuimca_cust_tab
@@ -497,6 +497,11 @@ CLASS lcl_event_handler IMPLEMENTATION.
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
         IF lo_grid IS BOUND.
           LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
+*            CASE <fs_alv_fieldcat>-fieldname.
+*              WHEN 'INIT_ANALYSIS_PART1' OR 'INIT_ANALYSIS_PART2' OR 'INIT_ANALYSIS_PART3' OR 'INIT_ANALYSIS_PART4'
+*                    OR 'COMMENT_PART1' OR 'COMMENT_PART2' OR 'TICKET_PART1' OR 'TICKET_PART2' OR 'APPROVAL'.
+*                <fs_alv_fieldcat>-emphasize = 'C700'.
+*            ENDCASE.
             CLEAR: <fs_alv_fieldcat>-edit, <fs_alv_fieldcat>-hotspot, <fs_alv_fieldcat>-emphasize.
           ENDLOOP.
           CALL METHOD lo_grid->set_frontend_fieldcatalog
@@ -505,6 +510,10 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CALL METHOD lo_grid->set_frontend_layout
             EXPORTING
               is_layout = ls_layout.
+          CALL FUNCTION 'GET_GLOBALS_FROM_SLVC_FULLSCR'
+            IMPORTING
+              e_grid = lo_grid.
+          CALL METHOD lo_grid->check_changed_data.
           CALL METHOD lo_grid->refresh_table_display.
           MESSAGE TEXT-m01 TYPE 'I'.
         ENDIF.
