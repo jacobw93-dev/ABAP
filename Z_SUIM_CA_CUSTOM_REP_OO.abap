@@ -30,7 +30,9 @@ CLASS lcl_event_handler DEFINITION.
           lo_full_adap TYPE REF TO cl_salv_fullscreen_adapter,
           ls_layout    TYPE lvc_s_layo,
           ls_fieldcat  TYPE lvc_t_fcat,
-          lv_valid(1)  TYPE c.
+          lv_string    TYPE c LENGTH 30,
+          lv_strlen    TYPE i,
+          lv_tsl       TYPE timestampl.
     METHODS:
       on_user_command FOR EVENT added_function OF cl_salv_events
         IMPORTING e_salv_function,
@@ -111,28 +113,30 @@ CLASS lcl_report DEFINITION.
                ticket_part2        TYPE string,
              END OF __ty_ca_cust.
 
-    DATA :lo_alv_mod         TYPE REF TO cl_salv_model,
-          lo_col_list        TYPE REF TO cl_salv_column_list,
-          lo_column          TYPE REF TO cl_salv_column,
-          lo_columns         TYPE REF TO cl_salv_columns_table,
-          lo_data            TYPE REF TO data,
-          lo_event_h         TYPE REF TO lcl_event_handler,
-          lo_events          TYPE REF TO cl_salv_events_table,
-          lo_functions       TYPE REF TO cl_salv_functions,
-          lo_salv_model      TYPE REF TO lcl_salv_model,
-          lo_salv_table      TYPE REF TO cl_salv_table,
-          ls_color           TYPE lvc_s_colo,
-          ls_display         TYPE REF TO cl_salv_display_settings,
-          lt_ca              TYPE   STANDARD TABLE OF __ty_ca,
-          lt_rsusr200        TYPE   STANDARD TABLE OF __ty_rsusr200,
-          lt_salv_1          TYPE   STANDARD TABLE OF __ty_salv_1,
-          lt_ca_cust         TYPE STANDARD TABLE OF __ty_ca_cust,
-          lv_icon            TYPE string,
-          lv_text            TYPE string,
-          wa_ca              TYPE __ty_ca,
-          wa_rsusr200        TYPE __ty_rsusr200,
-          wa_salv_1          TYPE __ty_salv_1,
-          wa_ca_cust         TYPE __ty_ca_cust.
+    DATA :lo_alv_mod    TYPE REF TO cl_salv_model,
+          lo_col_list   TYPE REF TO cl_salv_column_list,
+          lo_column     TYPE REF TO cl_salv_column,
+          lo_columns    TYPE REF TO cl_salv_columns_table,
+          lo_data       TYPE REF TO data,
+          lo_event_h    TYPE REF TO lcl_event_handler,
+          lo_events     TYPE REF TO cl_salv_events_table,
+          lo_functions  TYPE REF TO cl_salv_functions,
+          lo_salv_model TYPE REF TO lcl_salv_model,
+          lo_salv_table TYPE REF TO cl_salv_table,
+          ls_color      TYPE lvc_s_colo,
+          ls_display    TYPE REF TO cl_salv_display_settings,
+          lt_ca         TYPE   STANDARD TABLE OF __ty_ca,
+          lt_rsusr200   TYPE   STANDARD TABLE OF __ty_rsusr200,
+          lt_salv_1     TYPE   STANDARD TABLE OF __ty_salv_1,
+          lt_ca_cust    TYPE STANDARD TABLE OF __ty_ca_cust,
+          lt_ca_custom  TYPE STANDARD TABLE OF zsuimca_cust_tab,
+          lv_icon       TYPE string,
+          lv_text       TYPE string,
+          wa_ca         TYPE __ty_ca,
+          wa_rsusr200   TYPE __ty_rsusr200,
+          wa_salv_1     TYPE __ty_salv_1,
+          wa_ca_cust    TYPE __ty_ca_cust,
+          wa_ca_custom  TYPE zsuimca_cust_tab.
 
     METHODS:
       generate_output.
@@ -159,12 +163,24 @@ CLASS lcl_report IMPLEMENTATION.
     ls_color-col = 0.
     ls_color-int = 0.
 
-    SELECT DISTINCT auth_id bname user_name init_analysis_part1
-    approval comment_part1 ticket_part1 MAX( timestamp ) AS timestamp
+
+    SELECT * FROM
+    (lv_cust_table_name)
+    INTO TABLE lt_ca_custom.
+
+    SORT lt_ca_custom BY timestamp DESCENDING.
+    READ TABLE lt_ca_custom INTO wa_ca_custom INDEX 1.
+    MOVE-CORRESPONDING EXACT wa_ca_custom TO wa_ca_cust.
+    APPEND wa_ca_cust TO lt_ca_cust.
+
+    SELECT DISTINCT
+        auth_id bname user_name init_analysis_part1
+        approval comment_part1 ticket_part1 MAX( timestamp ) AS timestamp
     FROM (lv_cust_table_name)
     INTO CORRESPONDING FIELDS OF TABLE lt_ca_cust
-    GROUP BY auth_id bname user_name init_analysis_part1
-    approval comment_part1 ticket_part1 timestamp
+    GROUP BY
+        auth_id bname user_name init_analysis_part1
+        approval comment_part1 ticket_part1 timestamp
     ORDER BY timestamp DESCENDING.
 
     SELECT  name  FROM swfeature
@@ -206,7 +222,7 @@ CLASS lcl_report IMPLEMENTATION.
     ENDLOOP.
 
     REFRESH <lt_data>.
-    FREE <lt_data>.
+*    FREE <lt_data>.
     CLEAR lo_data.
 
     cl_salv_bs_runtime_info=>set(
@@ -255,7 +271,7 @@ CLASS lcl_report IMPLEMENTATION.
     CALL FUNCTION 'LIST_FREE_MEMORY'.
 
     REFRESH <lt_data>.
-    FREE <lt_data>.
+*    FREE <lt_data>.
     CLEAR lo_data.
 
     " join 2 internal tables
@@ -495,17 +511,21 @@ CLASS lcl_event_handler IMPLEMENTATION.
             IMPORTING
               et_fieldcatalog = ls_fieldcat.
           LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
-            CASE <fs_alv_fieldcat>-fieldname.
-              WHEN 'INIT_ANALYSIS_PART1' OR 'INIT_ANALYSIS_PART2' OR 'INIT_ANALYSIS_PART3' OR 'INIT_ANALYSIS_PART4'
-                OR 'COMMENT_PART1' OR 'COMMENT_PART2' OR 'TICKET_PART1' OR 'TICKET_PART2'.
-                <fs_alv_fieldcat>-edit = 'X'.
-                <fs_alv_fieldcat>-emphasize = 'C300'.
-              WHEN 'APPROVAL'.
-                <fs_alv_fieldcat>-checkbox = 'X'.
-                <fs_alv_fieldcat>-edit = 'X'.
-                <fs_alv_fieldcat>-hotspot = 'X'.
-                <fs_alv_fieldcat>-emphasize = 'C300'.
-            ENDCASE.
+            lv_string = <fs_alv_fieldcat>-fieldname.
+            lv_strlen = strlen( lv_string ) - 5.
+            IF lv_strlen < 0.
+              lv_strlen = 0.
+            ENDIF.
+            lv_string = lv_string+lv_strlen(4).
+            IF lv_string = 'PART'.
+              <fs_alv_fieldcat>-edit = 'X'.
+              <fs_alv_fieldcat>-emphasize = 'C300'.
+            ELSEIF  <fs_alv_fieldcat>-fieldname = 'APPROVAL'.
+              <fs_alv_fieldcat>-checkbox = 'X'.
+              <fs_alv_fieldcat>-edit = 'X'.
+              <fs_alv_fieldcat>-hotspot = 'X'.
+              <fs_alv_fieldcat>-emphasize = 'C300'.
+            ENDIF.
           ENDLOOP.
           CALL METHOD lo_grid->set_frontend_fieldcatalog
             EXPORTING
@@ -517,6 +537,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CALL METHOD lo_grid->refresh_table_display.
         ENDIF.
       WHEN 'SAVE'.
+        GET TIME STAMP FIELD lv_tsl.
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
         IF lo_grid IS BOUND.
@@ -547,6 +568,25 @@ CLASS lcl_event_handler IMPLEMENTATION.
             CALL METHOD lo_grid->check_changed_data .
           ENDIF.
 
+          LOOP AT lo_report->lt_salv_1 INTO lo_report->wa_salv_1.
+            IF lo_report->wa_salv_1-init_analysis_part1 IS NOT INITIAL
+            OR lo_report->wa_salv_1-init_analysis_part2 IS NOT INITIAL
+            OR lo_report->wa_salv_1-init_analysis_part3 IS NOT INITIAL
+            OR lo_report->wa_salv_1-init_analysis_part4 IS NOT INITIAL
+            OR lo_report->wa_salv_1-approval IS NOT INITIAL
+            OR lo_report->wa_salv_1-comment_part1 IS NOT INITIAL
+            OR lo_report->wa_salv_1-comment_part2 IS NOT INITIAL
+            OR lo_report->wa_salv_1-ticket_part1 IS NOT INITIAL
+            OR lo_report->wa_salv_1-ticket_part2 IS NOT INITIAL.
+              MOVE-CORRESPONDING lo_report->wa_salv_1 TO lo_report->wa_ca_custom.
+              lo_report->wa_ca_custom-client = sy-mandt.
+              lo_report->wa_ca_custom-timestamp = lv_tsl.
+              lo_report->wa_ca_custom-user_name = sy-uname.
+              APPEND lo_report->wa_ca_custom TO lo_report->lt_ca_custom.
+            ENDIF.
+          ENDLOOP.
+          MODIFY zsuimca_cust_tab FROM TABLE lo_report->lt_ca_custom.
+
           CALL FUNCTION 'DEQUEUE_E_TABLE'
             EXPORTING
               mode_rstable = 'E'
@@ -573,7 +613,6 @@ CLASS lcl_event_handler IMPLEMENTATION.
     ELSE.
       CLEAR: <lfa_data>-approval.
     ENDIF.
-    APPEND <lfa_data>  TO lo_report->lt_salv_1.
     lo_report->lo_salv_table->refresh( ).
   ENDMETHOD.
 ENDCLASS.
