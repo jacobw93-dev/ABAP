@@ -30,7 +30,7 @@ CLASS lcl_event_handler DEFINITION.
           lo_full_adap TYPE REF TO cl_salv_fullscreen_adapter,
           ls_layout    TYPE lvc_s_layo,
           ls_fieldcat  TYPE lvc_t_fcat,
-          lv_string    TYPE c LENGTH 30,
+          lv_string    TYPE c LENGTH 50,
           lv_strlen    TYPE i,
           lv_tsl       TYPE timestampl.
     METHODS:
