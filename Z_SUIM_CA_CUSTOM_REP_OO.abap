@@ -418,6 +418,20 @@ CLASS lcl_report IMPLEMENTATION.
         CLEAR: lo_column, lo_col_list.
       CATCH cx_salv_not_found.
     ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'USER_NAME' ).
+        lo_column->set_long_text( TEXT-c13 ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
+    TRY.
+        lo_column = lo_columns->get_column( 'LV_TSL' ).
+        lo_column->set_zero( '' ).
+        lo_column->set_edit_mask( '____-__-__ __:__:__' ).
+        lo_column->set_long_text( TEXT-c14 ).
+        lo_column->set_medium_text( TEXT-c14 ).
+        lo_column->set_short_text( '' ).
+      CATCH cx_salv_not_found.
+    ENDTRY.
 
     TRY.
         lo_salv_table->set_screen_status(
@@ -426,19 +440,7 @@ CLASS lcl_report IMPLEMENTATION.
           set_functions = lo_salv_table->c_functions_all ).
       CATCH cx_salv_msg.
     ENDTRY.
-    TRY.
-        lo_column = lo_columns->get_column( 'USER_NAME' ).
-        lo_column->set_long_text( TEXT-c13 ).
-      CATCH cx_salv_not_found.
-    ENDTRY.
-    TRY.
-        lo_column = lo_columns->get_column( 'LV_TSL' ).
-        lo_column->set_edit_mask( '____-__-__ __:__:__ ___').
-        lo_column->set_zero( '' ).
-        lo_column->set_long_text( TEXT-c14 ).
-        lo_column->set_medium_text( TEXT-c14 ).
-      CATCH cx_salv_not_found.
-    ENDTRY.
+
 
     lo_events = lo_salv_table->get_event( ).
     CREATE OBJECT lo_event_h.
@@ -479,7 +481,7 @@ ENDCLASS.
 CLASS lcl_event_handler IMPLEMENTATION.
   METHOD on_user_command.
     FIELD-SYMBOLS <fs_alv_fieldcat> LIKE LINE OF ls_fieldcat.
-    ls_layout-cwidth_opt = 'X'.
+    ls_layout-cwidth_opt = 'A'.
     ls_layout-zebra = 'X'.
     CALL METHOD lo_report->lo_salv_model->grabe_controller.
     CALL METHOD lo_report->lo_salv_model->grabe_adapter.
