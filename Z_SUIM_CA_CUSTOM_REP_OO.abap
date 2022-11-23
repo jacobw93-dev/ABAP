@@ -32,7 +32,7 @@ CLASS lcl_event_handler DEFINITION.
           ls_fieldcat  TYPE lvc_t_fcat,
           lv_string    TYPE c LENGTH 50,
           lv_strlen    TYPE i,
-          lv_tsl       TYPE timestamp.
+          lv_tsl       TYPE timestampl.
     METHODS:
       on_user_command FOR EVENT added_function OF cl_salv_events
         IMPORTING e_salv_function,
@@ -96,7 +96,7 @@ CLASS lcl_report DEFINITION.
                ticket_part1        TYPE string,
                ticket_part2        TYPE string,
                user_name           TYPE c LENGTH 20,
-               lv_tsl              TYPE timestamp,
+               lv_tsl              TYPE timestampl,
              END OF __ty_salv_1.
 
     DATA :lo_alv_mod    TYPE REF TO cl_salv_model,
