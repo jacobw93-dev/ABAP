@@ -6,7 +6,7 @@
 * Created by: Jakub Walczak (jakub.walczak@lingarogroup.com)          *
 *                                                                     *
 ***********************************************************************
-REPORT z_suim_ca_custom_rep_oo_v2.
+REPORT z_suim_ca_custom_rep_oo.
 DATA:  lv_cust_table_name TYPE tabname VALUE 'ZSUIMCA_CUST_TAB'.
 
 CLASS lcl_salv_model DEFINITION INHERITING FROM cl_salv_model_list.
@@ -292,8 +292,9 @@ CLASS lcl_report IMPLEMENTATION.
     ENDIF.
 
     SORT lt_salv_1 BY auth_id bname.
-
-    APPEND LINES OF lt_salv_1 TO lt_salv_2.
+    CLEAR: lt_salv_2.
+    lt_salv_2[] = lt_salv_1[].
+    SORT lt_salv_2 BY auth_id bname.
 
     " prepare SALV
     TRY.
@@ -491,10 +492,12 @@ CLASS lcl_event_handler IMPLEMENTATION.
     CALL METHOD lo_report->lo_salv_model->grabe_adapter.
     lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
     lo_grid = lo_full_adap->get_grid( ).
+
 *    CLEAR: ls_layout-cwidth_opt.
     CASE e_salv_function.
         " Make ALV as Editable ALV
       WHEN 'CHANGE'.
+
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
         IF lo_grid IS BOUND.
@@ -528,7 +531,13 @@ CLASS lcl_event_handler IMPLEMENTATION.
           " refresh the table
           CALL METHOD lo_grid->refresh_table_display.
         ENDIF.
+
+        CLEAR: lo_report->lt_salv_2.
+        lo_report->lt_salv_2[] = lo_report->lt_salv_1[].
+        SORT lo_report->lt_salv_2 BY auth_id bname.
+
       WHEN 'SAVE'.
+
         GET TIME STAMP FIELD lv_tsl.
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
@@ -559,8 +568,12 @@ CLASS lcl_event_handler IMPLEMENTATION.
             CALL METHOD lo_grid->check_changed_data .
           ENDIF.
 
+          CLEAR: lo_report->lt_ca_custom.
           LOOP AT lo_report->lt_salv_1 INTO lo_report->wa_salv_1.
-            READ TABLE lo_report->lt_salv_2 INTO lo_report->wa_salv_2 INDEX sy-tabix.
+            CLEAR: lo_report->wa_salv_2.
+            READ TABLE lo_report->lt_salv_2 INTO lo_report->wa_salv_2
+                WITH KEY bname = lo_report->wa_salv_1-bname
+                          auth_id = lo_report->wa_salv_1-auth_id.
             IF lo_report->wa_salv_2 NE lo_report->wa_salv_1.
 *            IF lo_report->wa_salv_1-init_analysis_part1 IS NOT INITIAL
 *            OR lo_report->wa_salv_1-init_analysis_part2 IS NOT INITIAL
@@ -590,6 +603,11 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CONCATENATE TEXT-m01 lv_cust_table_name INTO lv_string SEPARATED BY space.
           MESSAGE lv_string TYPE 'I'.
         ENDIF.
+
+        CLEAR: lo_report->lt_salv_2.
+        lo_report->lt_salv_2[] = lo_report->lt_salv_1[].
+        SORT lo_report->lt_salv_2 BY auth_id bname.
+
       WHEN 'SWITCH'.
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_enter ).
         lo_grid->register_edit_event( EXPORTING i_event_id = cl_gui_alv_grid=>mc_evt_modified ).
