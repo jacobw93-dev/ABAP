@@ -32,7 +32,7 @@ CLASS lcl_event_handler DEFINITION.
           ls_fieldcat  TYPE lvc_t_fcat,
           lv_string    TYPE c LENGTH 50,
           lv_strlen    TYPE i,
-          lv_tsl       TYPE timestampl.
+          lv_tsl       TYPE timestamp.
     METHODS:
       on_user_command FOR EVENT added_function OF cl_salv_events
         IMPORTING e_salv_function,
@@ -96,7 +96,7 @@ CLASS lcl_report DEFINITION.
                ticket_part1        TYPE string,
                ticket_part2        TYPE string,
                user_name           TYPE c LENGTH 20,
-               lv_tsl              TYPE timestampl,
+               lv_tsl              TYPE timestamp,
              END OF __ty_salv_1.
 
     DATA :lo_alv_mod    TYPE REF TO cl_salv_model,
@@ -146,8 +146,8 @@ CLASS lcl_report IMPLEMENTATION.
 
     DATA: lv_systype(10) TYPE c.
 
-    ls_color-col = 0.
-    ls_color-int = 0.
+*    ls_color-col = 0.
+*    ls_color-int = 0.
 
     FREE: lt_ca_custom.
 
@@ -431,7 +431,7 @@ CLASS lcl_report IMPLEMENTATION.
     TRY.
         lo_column = lo_columns->get_column( 'LV_TSL' ).
         lo_column->set_zero( '' ).
-        lo_column->set_edit_mask( '____-__-__ __:__:__' ).
+        lo_column->set_edit_mask( '==TSTMP' ).
         lo_column->set_long_text( TEXT-c14 ).
         lo_column->set_medium_text( TEXT-c14 ).
         lo_column->set_short_text( '' ).
@@ -514,12 +514,12 @@ CLASS lcl_event_handler IMPLEMENTATION.
             lv_string = lv_string+lv_strlen(4).
             IF lv_string = 'PART'.
               <fs_alv_fieldcat>-edit = 'X'.
-              <fs_alv_fieldcat>-emphasize = 'C300'.
+              <fs_alv_fieldcat>-emphasize = 'C311'.
             ELSEIF  <fs_alv_fieldcat>-fieldname = 'APPROVAL'.
               <fs_alv_fieldcat>-checkbox = 'X'.
               <fs_alv_fieldcat>-edit = 'X'.
               <fs_alv_fieldcat>-hotspot = 'X'.
-              <fs_alv_fieldcat>-emphasize = 'C300'.
+              <fs_alv_fieldcat>-emphasize = 'C311'.
             ENDIF.
           ENDLOOP.
           CALL METHOD lo_grid->set_frontend_fieldcatalog
