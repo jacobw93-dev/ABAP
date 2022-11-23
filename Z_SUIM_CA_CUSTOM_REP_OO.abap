@@ -146,9 +146,6 @@ CLASS lcl_report IMPLEMENTATION.
 
     DATA: lv_systype(10) TYPE c.
 
-*    ls_color-col = 0.
-*    ls_color-int = 0.
-
     FREE: lt_ca_custom.
 
     SELECT * FROM
@@ -493,7 +490,6 @@ CLASS lcl_event_handler IMPLEMENTATION.
     lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
     lo_grid = lo_full_adap->get_grid( ).
 
-*    CLEAR: ls_layout-cwidth_opt.
     CASE e_salv_function.
         " Make ALV as Editable ALV
       WHEN 'CHANGE'.
@@ -569,15 +565,6 @@ CLASS lcl_event_handler IMPLEMENTATION.
                 WITH KEY bname = lo_report->wa_salv_1-bname
                           auth_id = lo_report->wa_salv_1-auth_id.
             IF lo_report->wa_salv_2 NE lo_report->wa_salv_1.
-*            IF lo_report->wa_salv_1-init_analysis_part1 IS NOT INITIAL
-*            OR lo_report->wa_salv_1-init_analysis_part2 IS NOT INITIAL
-*            OR lo_report->wa_salv_1-init_analysis_part3 IS NOT INITIAL
-*            OR lo_report->wa_salv_1-init_analysis_part4 IS NOT INITIAL
-*            OR lo_report->wa_salv_1-approval IS NOT INITIAL
-*            OR lo_report->wa_salv_1-comment_part1 IS NOT INITIAL
-*            OR lo_report->wa_salv_1-comment_part2 IS NOT INITIAL
-*            OR lo_report->wa_salv_1-ticket_part1 IS NOT INITIAL
-*            OR lo_report->wa_salv_1-ticket_part2 IS NOT INITIAL.
               MOVE-CORRESPONDING lo_report->wa_salv_1 TO lo_report->wa_ca_custom.
               lo_report->wa_ca_custom-client = sy-mandt.
               lo_report->wa_ca_custom-timestamp = lv_tsl.
