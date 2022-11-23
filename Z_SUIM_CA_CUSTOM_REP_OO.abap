@@ -6,7 +6,7 @@
 * Created by: Jakub Walczak (jakub.walczak@lingarogroup.com)          *
 *                                                                     *
 ***********************************************************************
-REPORT z_suim_ca_custom_rep_oo.
+REPORT z_suim_ca_custom_rep_oo_v2.
 DATA:  lv_cust_table_name TYPE tabname VALUE 'ZSUIMCA_CUST_TAB'.
 
 CLASS lcl_salv_model DEFINITION INHERITING FROM cl_salv_model_list.
@@ -114,11 +114,13 @@ CLASS lcl_report DEFINITION.
           lt_ca         TYPE   STANDARD TABLE OF __ty_ca,
           lt_rsusr200   TYPE   STANDARD TABLE OF __ty_rsusr200,
           lt_salv_1     TYPE   STANDARD TABLE OF __ty_salv_1,
+          lt_salv_2     TYPE   STANDARD TABLE OF __ty_salv_1,
           lt_ca_custom  TYPE STANDARD TABLE OF zsuimca_cust_tab,
           lt_swfeature  TYPE STANDARD TABLE OF swfeature,
           wa_ca         TYPE __ty_ca,
           wa_rsusr200   TYPE __ty_rsusr200,
           wa_salv_1     TYPE __ty_salv_1,
+          wa_salv_2     TYPE __ty_salv_1,
           wa_ca_custom  TYPE zsuimca_cust_tab,
           wa_swfeature  TYPE swfeature.
 
@@ -290,6 +292,8 @@ CLASS lcl_report IMPLEMENTATION.
     ENDIF.
 
     SORT lt_salv_1 BY auth_id bname.
+
+    APPEND LINES OF lt_salv_1 TO lt_salv_2.
 
     " prepare SALV
     TRY.
@@ -556,15 +560,17 @@ CLASS lcl_event_handler IMPLEMENTATION.
           ENDIF.
 
           LOOP AT lo_report->lt_salv_1 INTO lo_report->wa_salv_1.
-            IF lo_report->wa_salv_1-init_analysis_part1 IS NOT INITIAL
-            OR lo_report->wa_salv_1-init_analysis_part2 IS NOT INITIAL
-            OR lo_report->wa_salv_1-init_analysis_part3 IS NOT INITIAL
-            OR lo_report->wa_salv_1-init_analysis_part4 IS NOT INITIAL
-            OR lo_report->wa_salv_1-approval IS NOT INITIAL
-            OR lo_report->wa_salv_1-comment_part1 IS NOT INITIAL
-            OR lo_report->wa_salv_1-comment_part2 IS NOT INITIAL
-            OR lo_report->wa_salv_1-ticket_part1 IS NOT INITIAL
-            OR lo_report->wa_salv_1-ticket_part2 IS NOT INITIAL.
+            READ TABLE lo_report->lt_salv_2 INTO lo_report->wa_salv_2 INDEX sy-tabix.
+            IF lo_report->wa_salv_2 NE lo_report->wa_salv_1.
+*            IF lo_report->wa_salv_1-init_analysis_part1 IS NOT INITIAL
+*            OR lo_report->wa_salv_1-init_analysis_part2 IS NOT INITIAL
+*            OR lo_report->wa_salv_1-init_analysis_part3 IS NOT INITIAL
+*            OR lo_report->wa_salv_1-init_analysis_part4 IS NOT INITIAL
+*            OR lo_report->wa_salv_1-approval IS NOT INITIAL
+*            OR lo_report->wa_salv_1-comment_part1 IS NOT INITIAL
+*            OR lo_report->wa_salv_1-comment_part2 IS NOT INITIAL
+*            OR lo_report->wa_salv_1-ticket_part1 IS NOT INITIAL
+*            OR lo_report->wa_salv_1-ticket_part2 IS NOT INITIAL.
               MOVE-CORRESPONDING lo_report->wa_salv_1 TO lo_report->wa_ca_custom.
               lo_report->wa_ca_custom-client = sy-mandt.
               lo_report->wa_ca_custom-timestamp = lv_tsl.
