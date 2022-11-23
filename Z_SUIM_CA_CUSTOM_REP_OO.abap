@@ -506,20 +506,14 @@ CLASS lcl_event_handler IMPLEMENTATION.
             IMPORTING
               et_fieldcatalog = ls_fieldcat.
           LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
-            lv_string = <fs_alv_fieldcat>-fieldname.
-            lv_strlen = strlen( lv_string ) - 5.
-            IF lv_strlen < 0.
-              lv_strlen = 0.
-            ENDIF.
-            lv_string = lv_string+lv_strlen(4).
-            IF lv_string = 'PART'.
+            IF <fs_alv_fieldcat>-fieldname cp '*PART+'.
               <fs_alv_fieldcat>-edit = 'X'.
-              <fs_alv_fieldcat>-emphasize = 'C311'.
+              <fs_alv_fieldcat>-emphasize = 'C300'.
             ELSEIF  <fs_alv_fieldcat>-fieldname = 'APPROVAL'.
               <fs_alv_fieldcat>-checkbox = 'X'.
               <fs_alv_fieldcat>-edit = 'X'.
               <fs_alv_fieldcat>-hotspot = 'X'.
-              <fs_alv_fieldcat>-emphasize = 'C311'.
+              <fs_alv_fieldcat>-emphasize = 'C300'.
             ENDIF.
           ENDLOOP.
           CALL METHOD lo_grid->set_frontend_fieldcatalog
