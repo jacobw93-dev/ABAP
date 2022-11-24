@@ -17,35 +17,22 @@ TYPES  : BEGIN OF __ty_ca,
            ustyp     TYPE ususerall-ustyp,
          END OF __ty_ca ,
 
-         BEGIN OF __ty_rsusr200,
-           bname       TYPE xubname,
-           erdat       TYPE xuerdat,
-           trdat       TYPE xuldate_alv,
-           ltime       TYPE xultime,
-           icon_locked TYPE xuuflag_alv,
-           lock_reason TYPE xuureason_alv,
-           usr02flag   TYPE xuuflag,
-         END OF __ty_rsusr200,
-
          BEGIN OF __ty_salv_1,
-           sysname          TYPE c LENGTH 10,
-           systemid         TYPE sy-sysid,
-           auth_id          TYPE uscraut-auth_id,
-           text             TYPE uscrauidt-text,
-           bname            TYPE ususerall-bname,
-           name_text        TYPE ususerall-name_text,
-           class            TYPE ususerall-class,
-           gltgv            TYPE ususerall-gltgv,
-           gltgb            TYPE ususerall-gltgb,
-           accnt            TYPE ususerall-accnt,
-           ustyp            TYPE ususerall-ustyp,
-           erdat            TYPE xuerdat,
-           trdat            TYPE xuldate,
-           ltime            TYPE xultime,
-           icon_locked      TYPE xuuflag_alv,
-           lock_reason      TYPE xuureason_alv,
-           usr02flag        TYPE xuuflag,
-           initial_analysis TYPE string,
+           sysname   TYPE c LENGTH 10,
+           systemid  TYPE sy-sysid,
+           auth_id   TYPE uscraut-auth_id,
+           text      TYPE uscrauidt-text,
+           bname     TYPE ususerall-bname,
+           name_text TYPE ususerall-name_text,
+           class     TYPE ususerall-class,
+           gltgv     TYPE ususerall-gltgv,
+           gltgb     TYPE ususerall-gltgb,
+           accnt     TYPE ususerall-accnt,
+           ustyp     TYPE ususerall-ustyp,
+           erdat     TYPE xuerdat,
+           trdat     TYPE xuldate,
+           ltime     TYPE xultime,
+           uflag TYPE xuflag,
          END OF __ty_salv_1.
 
 FIELD-SYMBOLS  : <lt_data> TYPE ANY TABLE,
@@ -56,16 +43,16 @@ DATA :lo_data        TYPE REF TO data,
       lo_salv_table  TYPE REF TO cl_salv_table,
       lt_ca          TYPE   STANDARD TABLE OF __ty_ca WITH HEADER LINE,
       lt_ca_custom   TYPE STANDARD TABLE OF zca_cust_tab,
-      lt_rsusr200    TYPE   STANDARD TABLE OF __ty_rsusr200 WITH HEADER LINE,
       lt_salv_1      TYPE   STANDARD TABLE OF __ty_salv_1 WITH HEADER LINE,
       lt_swfeature   TYPE STANDARD TABLE OF swfeature,
+      lt_usr02       TYPE STANDARD TABLE OF usr02,
       lv_systype(10) TYPE c,
       lv_tsl         TYPE timestampl,
       wa_ca          TYPE __ty_ca,
       wa_ca_custom   TYPE zca_cust_tab,
-      wa_rsusr200    TYPE __ty_rsusr200,
       wa_salv_1      TYPE __ty_salv_1,
-      wa_swfeature   TYPE swfeature.
+      wa_swfeature   TYPE swfeature,
+      wa_usr02       TYPE usr02.
 
 DATA:  lv_cust_table_name TYPE tabname VALUE 'ZSUIMCA_CUST_TAB'.
 
@@ -148,10 +135,6 @@ ENDTRY.
 
 cl_salv_bs_runtime_info=>clear_all( ).
 
-LOOP AT <lt_data> ASSIGNING  <lt_tab>.
-  MOVE-CORRESPONDING  <lt_tab> TO lt_rsusr200.
-  APPEND lt_rsusr200.
-ENDLOOP.
 
 CALL FUNCTION 'LIST_FREE_MEMORY'.
 
@@ -159,8 +142,9 @@ REFRESH <lt_data>.
 FREE <lt_data>.
 CLEAR lo_data.
 
-IF lt_ca[] IS NOT INITIAL
-AND lt_rsusr200[] IS NOT INITIAL.
+SELECT * FROM USR02 INTO table lt_usr02.
+
+IF lt_ca[] IS NOT INITIAL.
   LOOP AT  lt_ca INTO wa_ca.
 
     wa_salv_1-sysname = lv_systype.
@@ -175,14 +159,12 @@ AND lt_rsusr200[] IS NOT INITIAL.
     wa_salv_1-accnt = wa_ca-accnt.
     wa_salv_1-ustyp = wa_ca-ustyp.
 
-    CLEAR: wa_rsusr200.
-    READ TABLE lt_rsusr200 INTO wa_rsusr200 WITH KEY bname = wa_ca-bname.
-
-    wa_salv_1-erdat = wa_rsusr200-erdat.
-    wa_salv_1-trdat = wa_rsusr200-trdat.
-    wa_salv_1-ltime = wa_rsusr200-ltime.
-    wa_salv_1-icon_locked = wa_rsusr200-icon_locked.
-    wa_salv_1-lock_reason = wa_rsusr200-lock_reason.
+    CLEAR: wa_usr02.
+    READ TABLE lt_usr02 INTO wa_usr02 WITH KEY bname = wa_ca-bname mandt = sy-mandt.
+    wa_salv_1-erdat = wa_usr02-erdat.
+    wa_salv_1-trdat = wa_usr02-trdat.
+    wa_salv_1-ltime = wa_usr02-ltime.
+    wa_salv_1-uflag = wa_usr02-uflag.
 
     APPEND wa_salv_1 TO lt_salv_1.
 
@@ -192,15 +174,15 @@ ENDIF.
 SORT lt_salv_1 BY auth_id bname ASCENDING.
 
 CALL FUNCTION 'ENQUEUE_E_TABLE'
-            EXPORTING
-              mode_rstable   = 'E'
-              tabname        = lv_cust_table_name
-            EXCEPTIONS
-              foreign_lock   = 1
-              system_failure = 2
-              OTHERS         = 3.
+  EXPORTING
+    mode_rstable   = 'E'
+    tabname        = lv_cust_table_name
+  EXCEPTIONS
+    foreign_lock   = 1
+    system_failure = 2
+    OTHERS         = 3.
 
-*DELETE FROM zca_cust_tab.
+DELETE FROM zca_cust_tab.
 GET TIME STAMP FIELD lv_tsl.
 LOOP AT lt_salv_1 INTO wa_salv_1.
   MOVE-CORRESPONDING wa_salv_1 TO wa_ca_custom.
@@ -211,9 +193,9 @@ ENDLOOP.
 MODIFY zca_cust_tab FROM TABLE lt_ca_custom.
 
 CALL FUNCTION 'DEQUEUE_E_TABLE'
-            EXPORTING
-              mode_rstable = 'E'
-              tabname      = lv_cust_table_name.
+  EXPORTING
+    mode_rstable = 'E'
+    tabname      = lv_cust_table_name.
 
 
 TRY.
