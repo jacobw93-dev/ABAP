@@ -53,17 +53,21 @@ FIELD-SYMBOLS  : <lt_data> TYPE ANY TABLE,
 
 DATA :lo_data        TYPE REF TO data,
       lo_display     TYPE REF TO cl_salv_display_settings,
-      lo_salv_table       TYPE REF TO cl_salv_table,
+      lo_salv_table  TYPE REF TO cl_salv_table,
       lt_ca          TYPE   STANDARD TABLE OF __ty_ca WITH HEADER LINE,
+      lt_ca_custom   TYPE STANDARD TABLE OF zca_cust_tab,
       lt_rsusr200    TYPE   STANDARD TABLE OF __ty_rsusr200 WITH HEADER LINE,
       lt_salv_1      TYPE   STANDARD TABLE OF __ty_salv_1 WITH HEADER LINE,
       lt_swfeature   TYPE STANDARD TABLE OF swfeature,
       lv_systype(10) TYPE c,
+      lv_tsl         TYPE timestampl,
       wa_ca          TYPE __ty_ca,
+      wa_ca_custom   TYPE zca_cust_tab,
       wa_rsusr200    TYPE __ty_rsusr200,
       wa_salv_1      TYPE __ty_salv_1,
       wa_swfeature   TYPE swfeature.
 
+DATA:  lv_cust_table_name TYPE tabname VALUE 'ZSUIMCA_CUST_TAB'.
 
 SELECT  *  FROM swfeature INTO TABLE lt_swfeature.
 SORT lt_swfeature BY mod_date.
@@ -186,6 +190,31 @@ AND lt_rsusr200[] IS NOT INITIAL.
 ENDIF.
 
 SORT lt_salv_1 BY auth_id bname ASCENDING.
+
+CALL FUNCTION 'ENQUEUE_E_TABLE'
+            EXPORTING
+              mode_rstable   = 'E'
+              tabname        = lv_cust_table_name
+            EXCEPTIONS
+              foreign_lock   = 1
+              system_failure = 2
+              OTHERS         = 3.
+
+*DELETE FROM zca_cust_tab.
+GET TIME STAMP FIELD lv_tsl.
+LOOP AT lt_salv_1 INTO wa_salv_1.
+  MOVE-CORRESPONDING wa_salv_1 TO wa_ca_custom.
+  wa_ca_custom-client = sy-mandt.
+  wa_ca_custom-timestamp = lv_tsl.
+  APPEND wa_ca_custom TO lt_ca_custom.
+ENDLOOP.
+MODIFY zca_cust_tab FROM TABLE lt_ca_custom.
+
+CALL FUNCTION 'DEQUEUE_E_TABLE'
+            EXPORTING
+              mode_rstable = 'E'
+              tabname      = lv_cust_table_name.
+
 
 TRY.
     cl_salv_table=>factory( EXPORTING list_display = abap_false
