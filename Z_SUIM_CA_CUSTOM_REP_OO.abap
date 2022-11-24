@@ -28,16 +28,28 @@ CLASS lcl_event_handler DEFINITION.
   PUBLIC SECTION.
     DATA: lo_grid      TYPE REF TO cl_gui_alv_grid,
           lo_full_adap TYPE REF TO cl_salv_fullscreen_adapter,
+          ls_stable    TYPE lvc_s_stbl,
           ls_layout    TYPE lvc_s_layo,
           ls_fieldcat  TYPE lvc_t_fcat,
           lv_string    TYPE c LENGTH 50,
           lv_strlen    TYPE i,
           lv_tsl       TYPE timestampl.
+
+    DATA: is_stable TYPE lvc_s_stbl.
+
     METHODS:
       on_user_command FOR EVENT added_function OF cl_salv_events
         IMPORTING e_salv_function,
       on_link_click FOR EVENT link_click OF cl_salv_events_table
-        IMPORTING row column.
+        IMPORTING row column,
+      grid_refresh_and_keep_position
+        IMPORTING
+          i_soft         TYPE char01  DEFAULT 'X'
+          i_set_current  TYPE char01  DEFAULT space
+          i_set_selected TYPE char01  DEFAULT space
+        CHANGING
+          lo_grid        TYPE REF TO cl_gui_alv_grid .
+
 ENDCLASS.
 
 *----------------------------------------------------------------------*
@@ -481,15 +493,89 @@ ENDCLASS.
 * Event Handler for the SALV
 *----------------------------------------------------------------------*
 CLASS lcl_event_handler IMPLEMENTATION.
+
+  METHOD grid_refresh_and_keep_position.
+    DATA: es_row_no  TYPE lvc_s_roid.
+    DATA: es_row_info  TYPE lvc_s_row.
+    DATA: es_col_info  TYPE lvc_s_col.
+    DATA: fes_row_no  TYPE lvc_s_roid.
+    DATA: fes_row_id  TYPE lvc_s_row.
+    DATA: fes_col_id  TYPE lvc_s_col.
+    DATA: mt_cells TYPE lvc_t_ceno.
+    DATA: mt_rows TYPE lvc_t_row.
+
+    lo_grid->get_scroll_info_via_id(
+    IMPORTING
+      es_row_no   = es_row_no
+      es_row_info = es_row_info
+      es_col_info = es_col_info
+      ).
+
+    lo_grid->get_current_cell(
+      IMPORTING
+*        e_row     = e_row
+*        e_value   = e_value
+*        e_col     = e_col
+        es_row_id = fes_row_id
+        es_col_id = fes_col_id
+        es_row_no = fes_row_no
+           ).
+
+
+    lo_grid->get_selected_rows(
+    IMPORTING
+      et_index_rows = mt_rows
+*            et_row_no     = et_row_no
+      ).
+    IF mt_rows[] IS INITIAL.
+      lo_grid->get_selected_cells_id(
+      IMPORTING  et_cells = mt_cells ).
+    ENDIF.
+
+
+    lo_grid->refresh_table_display( i_soft_refresh = i_soft ).
+
+
+    IF i_set_selected EQ 'X'.
+      IF mt_cells[] IS NOT INITIAL.
+        lo_grid->set_selected_cells_id( it_cells = mt_cells   ).
+      ELSE.
+        lo_grid->set_selected_rows(
+        it_index_rows            = mt_rows
+*        it_row_no                = it_row_no
+*        is_keep_other_selections = is_keep_other_selections
+        ).
+      ENDIF.
+    ENDIF.
+
+    lo_grid->set_scroll_info_via_id(
+    is_row_info = es_row_info
+    is_col_info = es_col_info
+    is_row_no   = es_row_no
+    ).
+
+    IF i_set_current EQ 'X'.
+      lo_grid->set_current_cell_via_id( is_row_id = fes_row_id
+                                      is_column_id = fes_col_id
+                                      is_row_no = fes_row_no ).
+    ENDIF.
+    REFRESH: mt_rows[], mt_cells[].
+  ENDMETHOD.
+
+
+
   METHOD on_user_command.
     FIELD-SYMBOLS <fs_alv_fieldcat> LIKE LINE OF ls_fieldcat.
     ls_layout-cwidth_opt = 'A'.
     ls_layout-zebra = 'X'.
+
+    is_stable-row = 'X'.
+    is_stable-col = 'X'.
+
     CALL METHOD lo_report->lo_salv_model->grabe_controller.
     CALL METHOD lo_report->lo_salv_model->grabe_adapter.
     lo_full_adap ?= lo_report->lo_salv_model->lo_adapter.
     lo_grid = lo_full_adap->get_grid( ).
-
     CASE e_salv_function.
         " Make ALV as Editable ALV
       WHEN 'CHANGE'.
@@ -502,7 +588,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
             IMPORTING
               et_fieldcatalog = ls_fieldcat.
           LOOP AT ls_fieldcat ASSIGNING <fs_alv_fieldcat>.
-            IF <fs_alv_fieldcat>-fieldname cp '*PART+'.
+            IF <fs_alv_fieldcat>-fieldname CP '*PART+'.
               <fs_alv_fieldcat>-edit = 'X'.
               <fs_alv_fieldcat>-emphasize = 'C300'.
             ELSEIF  <fs_alv_fieldcat>-fieldname = 'APPROVAL'.
@@ -519,7 +605,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
             EXPORTING
               is_layout = ls_layout.
           " refresh the table
-          CALL METHOD lo_grid->refresh_table_display.
+          CALL METHOD lo_grid->refresh_table_display( is_stable = is_stable ).
         ENDIF.
 
         CLEAR: lo_report->lt_salv_2.
@@ -580,7 +666,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
               tabname      = lv_cust_table_name.
 
           CALL METHOD lo_grid->check_changed_data.
-          CALL METHOD lo_grid->refresh_table_display.
+          CALL METHOD lo_grid->refresh_table_display( is_stable = is_stable ).
           CONCATENATE TEXT-m01 lv_cust_table_name INTO lv_string SEPARATED BY space.
           MESSAGE lv_string TYPE 'I'.
         ENDIF.
@@ -614,7 +700,7 @@ CLASS lcl_event_handler IMPLEMENTATION.
           CALL METHOD lo_grid->set_frontend_layout
             EXPORTING
               is_layout = ls_layout.
-          CALL METHOD lo_grid->refresh_table_display.
+          CALL METHOD lo_grid->refresh_table_display( is_stable = is_stable ).
         ENDIF.
       WHEN 'EXIT'.
         LEAVE PROGRAM.
