@@ -54,7 +54,7 @@ DATA :lo_data        TYPE REF TO data,
       wa_swfeature   TYPE swfeature,
       wa_usr02       TYPE usr02.
 
-DATA:  lv_cust_table_name TYPE tabname VALUE 'ZSUIMCA_CUST_TAB'.
+DATA:  lv_cust_table_name TYPE tabname VALUE 'ZCA_CUST_TAB'.
 
 SELECT  *  FROM swfeature INTO TABLE lt_swfeature.
 SORT lt_swfeature BY mod_date.
@@ -182,7 +182,7 @@ CALL FUNCTION 'ENQUEUE_E_TABLE'
     system_failure = 2
     OTHERS         = 3.
 
-DELETE FROM zca_cust_tab.
+*DELETE FROM zca_cust_tab.
 GET TIME STAMP FIELD lv_tsl.
 LOOP AT lt_salv_1 INTO wa_salv_1.
   MOVE-CORRESPONDING wa_salv_1 TO wa_ca_custom.
