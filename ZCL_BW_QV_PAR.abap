@@ -80,15 +80,15 @@ CLASS zcl_bw_qv_par IMPLEMENTATION.
           OTHERS       = 2.
 
       IF sy-subrc = 0
-         AND lt_selhash IS NOT INITIAL
-         AND lt_selcheck IS NOT INITIAL.
+         AND ( lt_selhash IS NOT INITIAL ).
+*         OR lt_selcheck IS NOT INITIAL ).
 
         CLEAR: lv_lock.
         DELETE lt_selcheck WHERE chanm <> '0GN_R3_SSY'.
         SORT lt_selcheck BY guid ASCENDING.
         SORT lt_selhash BY guid ASCENDING.
 
-        LOOP AT lt_selhash ASSIGNING <fs_selhash>.
+        LOOP AT lt_selhash ASSIGNING <fs_selhash> WHERE uname <> sy-uname.
           IF lv_user IS NOT INITIAL.
             CONCATENATE lv_user <fs_selhash>-uname INTO lv_user SEPARATED BY ','.
           ELSE.
@@ -119,20 +119,24 @@ CLASS zcl_bw_qv_par IMPLEMENTATION.
         ENDLOOP.
 
         IF lv_selection IS INITIAL.
-
           LOOP AT lt_auth ASSIGNING <fs_auth> WHERE uname <> sy-uname.
             lv_exists = abap_true.
           ENDLOOP.
-
         ELSE.
-          IF lt_auth IS NOT INITIAL AND lv_lock IS NOT INITIAL.
-            LOOP AT lt_values INTO DATA(lv_value).
-              READ TABLE lt_auth WITH KEY value = lv_value TRANSPORTING NO FIELDS.
-              IF sy-subrc = 0.
-                lv_exists = abap_true.
-                EXIT.
-              ENDIF.
-            ENDLOOP.
+          IF lt_auth[] IS NOT INITIAL.
+            IF lt_selcheck[] IS NOT INITIAL.
+              LOOP AT lt_auth ASSIGNING <fs_auth> WHERE uname <> sy-uname.
+                LOOP AT lt_values INTO DATA(lv_value).
+                  READ TABLE lt_auth WITH KEY value = lv_value TRANSPORTING NO FIELDS.
+                  IF sy-subrc = 0.
+                    lv_exists = abap_true.
+                    EXIT.
+                  ENDIF.
+                ENDLOOP.
+              ENDLOOP.
+            ELSE.
+              lv_exists = abap_true.
+            ENDIF.
           ENDIF.
 
         ENDIF.
