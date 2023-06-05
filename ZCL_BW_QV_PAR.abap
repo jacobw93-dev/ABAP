@@ -1,4 +1,20 @@
-CLASS zcl_bw_qv_ca_crc01 IMPLEMENTATION.
+CLASS zcl_bw_qv_par DEFINITION
+  PUBLIC
+  INHERITING FROM zcl_bw_qv_base
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    METHODS get
+        REDEFINITION .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_bw_qv_par IMPLEMENTATION.
 
 
   METHOD get.
@@ -11,21 +27,21 @@ CLASS zcl_bw_qv_ca_crc01 IMPLEMENTATION.
       END OF _ty_s_auth.
 
     DATA:
-      lv_init_sel_flag TYPE abap_bool,
-      ls_auth          TYPE _ty_s_auth,
-      lt_auth          TYPE HASHED TABLE OF _ty_s_auth
+      lv_exists    TYPE abap_bool,
+      ls_auth      TYPE _ty_s_auth,
+      lt_auth      TYPE HASHED TABLE OF _ty_s_auth
                    WITH UNIQUE KEY value,
-      ls_range         TYPE rsr_s_rangesid,
-      ls_var_range     TYPE rrs0_s_var_range,
-      lt_values        TYPE TABLE OF string,
-      lv_selection     TYPE c LENGTH 30,
-      lv_lock          TYPE c LENGTH 30,
-      lv_user          TYPE c LENGTH 30,
-      lv_plandso       TYPE c LENGTH 30,
-      lv_message_1     TYPE c LENGTH 50,
-      lv_message_2     TYPE c LENGTH 50,
-      lt_selhash       TYPE rspls_t_selhash,
-      lt_selcheck      TYPE rspls_t_selcheck.
+      ls_range     TYPE rsr_s_rangesid,
+      ls_var_range TYPE rrs0_s_var_range,
+      lt_values    TYPE TABLE OF string,
+      lv_selection TYPE c LENGTH 30,
+      lv_lock      TYPE c LENGTH 30,
+      lv_user      TYPE c LENGTH 30,
+      lv_plandso   TYPE c LENGTH 30,
+      lv_message_1 TYPE c LENGTH 50,
+      lv_message_2 TYPE c LENGTH 50,
+      lt_selhash   TYPE rspls_t_selhash,
+      lt_selcheck  TYPE rspls_t_selcheck.
 
     FIELD-SYMBOLS:
       <fs_auth>     TYPE _ty_s_auth,
@@ -67,7 +83,7 @@ CLASS zcl_bw_qv_ca_crc01 IMPLEMENTATION.
          AND lt_selhash IS NOT INITIAL
          AND lt_selcheck IS NOT INITIAL.
 
-        CLEAR: lt_values, lv_lock.
+        CLEAR: lv_lock.
         DELETE lt_selcheck WHERE chanm <> '0GN_R3_SSY'.
         SORT lt_selcheck BY guid ASCENDING.
         SORT lt_selhash BY guid ASCENDING.
@@ -105,18 +121,23 @@ CLASS zcl_bw_qv_ca_crc01 IMPLEMENTATION.
         IF lv_selection IS INITIAL.
 
           LOOP AT lt_auth ASSIGNING <fs_auth> WHERE uname <> sy-uname.
-            lv_init_sel_flag = abap_true.
+            lv_exists = abap_true.
           ENDLOOP.
 
         ELSE.
           IF lt_auth IS NOT INITIAL AND lv_lock IS NOT INITIAL.
-            READ TABLE lt_auth ASSIGNING <fs_auth>
-                       WITH KEY value = lv_selection.
+            LOOP AT lt_values INTO DATA(lv_value).
+              READ TABLE lt_auth WITH KEY value = lv_value TRANSPORTING NO FIELDS.
+              IF sy-subrc = 0.
+                lv_exists = abap_true.
+                EXIT.
+              ENDIF.
+            ENDLOOP.
           ENDIF.
 
         ENDIF.
 
-        IF sy-subrc = 0 OR lv_init_sel_flag = abap_true.
+        IF sy-subrc = 0 AND lv_exists = abap_true.
 
           lv_message_1 = 'Lock by user(s)'.
           lv_message_2 = 'Active for Source System(s):'.
