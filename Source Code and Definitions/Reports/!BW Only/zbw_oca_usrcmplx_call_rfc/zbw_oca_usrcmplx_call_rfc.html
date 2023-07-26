@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=ISO-8859-1" />
+<title>ZBW_OCA_USRCMPLX_CALL_RFC</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZBW_OCA_USRCMPLX_CALL_RFC</h2>
+<h3> Description: Privileged Access Report - Call RFC - Custom Crit. Prof. (ABAP report)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;ZBW_OCA_USRCMPLX_CALL_RFC<br />
+*&---------------------------------------------------------------------*<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+REPORT zbw_oca_usrcmplx_call_rfc.<br />
+<br />
+DATA: lv_variant(10)      TYPE c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_dest(20)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_searchstring(20)&nbsp;TYPE&nbsp;c.<br />
+<br />
+lv_variant = sy-slset.<br />
+<br />
+PARAMETERS p_dest TYPE char20.<br />
+<br />
+CONCATENATE 'DEST_SYS_' lv_variant INTO lv_searchstring.<br />
+<br />
+SELECT SINGLE low FROM zbw_varvc<br />
+INTO lv_dest<br />
+WHERE name EQ lv_searchstring.<br />
+<br />
+IF sy-subrc = 0.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'RFC_PING'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESTINATION&nbsp;lv_dest<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;communication_failure&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system_failure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'ZBW_OCA_USRCMPLX_FM'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESTINATION&nbsp;lv_dest.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i000(zbw_general).<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e039(zbw_general)&nbsp;WITH&nbsp;lv_dest.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ELSE.<br />
+&nbsp;&nbsp;MESSAGE&nbsp;e040(zbw_general).<br />
+ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;ZBW_GENERAL<br />
+*039&nbsp;&nbsp;&nbsp;Connection&nbsp;failed&nbsp;for&nbsp;&1.<br />
+*040&nbsp;&nbsp;&nbsp;Record&nbsp;not&nbsp;found&nbsp;in&nbsp;table&nbsp;ZBW_VARVC.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer"></td>
+   </tr>
+</table>
+</body>
+</html>

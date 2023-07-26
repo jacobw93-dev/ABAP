@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=ISO-8859-1" />
+<title>ZBW_OCA_USRCMPLX_REPORT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZBW_OCA_USRCMPLX_REPORT</h2>
+<h3> Description: Privileged Access Report - Custom Critical Profiles (ABAP Report)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;PAR&nbsp;-&gt;&nbsp;SUIM&nbsp;Critical&nbsp;Profiles<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+REPORT zbw_oca_usrcmplx_report.<br />
+<br />
+FIELD-SYMBOLS  : &lt;lt_data&gt; TYPE ANY TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;lt_tab&gt;&nbsp;&nbsp;TYPE&nbsp;any.<br />
+<br />
+TYPES : BEGIN OF __ty_profiles,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;profile&nbsp;TYPE&nbsp;xuprofile,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;&nbsp;__ty_profiles,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;__ty_ust04,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mandt&nbsp;&nbsp;&nbsp;TYPE&nbsp;mandt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bname&nbsp;&nbsp;&nbsp;TYPE&nbsp;xubname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;profile&nbsp;TYPE&nbsp;xuprofile,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptext&nbsp;&nbsp;&nbsp;TYPE&nbsp;usr11-ptext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;langu&nbsp;&nbsp;&nbsp;TYPE&nbsp;langu,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;&nbsp;__ty_ust04.<br />
+<br />
+DATA: ls_fields      TYPE rsdsexpr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_texpr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;rsds_expr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texpr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;rsds_texpr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_seltab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;rsparams,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_salv_display_settings,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_salv_table&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_salv_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_seltab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;rsparams,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_swfeature&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;swfeature,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_usr02&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;usr02,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_ust04&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;__ty_ust04,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_systype(10)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_tsl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;timestampl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_profiles&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;__ty_profiles,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_rsusr002&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;zbw_oca_usrcmplx&nbsp;WITH&nbsp;HEADER&nbsp;LINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;sysname&nbsp;sysid&nbsp;bname&nbsp;profile,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_profiles&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;__ty_profiles,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_rsusr002&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;zbw_oca_usrcmplx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_swfeature&nbsp;&nbsp;&nbsp;TYPE&nbsp;swfeature,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_usr02&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;usr02,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_ust04&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;__ty_ust04.<br />
+<br />
+<br />
+DATA:  lv_cust_table_name TYPE tabname VALUE 'ZBW_OCA_USRCMPLX'.<br />
+<br />
+cl_salv_bs_runtime_info=&gt;set(<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;display&nbsp;&nbsp;=&nbsp;abap_false<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;metadata&nbsp;=&nbsp;abap_false<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;abap_true<br />
+&nbsp;&nbsp;&nbsp;&nbsp;).<br />
+<br />
+CALL FUNCTION 'LIST_FREE_MEMORY'.<br />
+<br />
+SELECT  *  FROM swfeature INTO TABLE lt_swfeature.<br />
+SORT lt_swfeature BY mod_date.<br />
+READ TABLE lt_swfeature INTO  wa_swfeature INDEX 1.<br />
+lv_systype = wa_swfeature-name.<br />
+CLEAR: lt_swfeature.<br />
+<br />
+CLEAR ls_seltab.<br />
+ls_seltab-selname = 'PROF1'.<br />
+ls_seltab-kind = 'S'.<br />
+ls_seltab-sign = 'I'.<br />
+ls_seltab-option = 'EQ'.<br />
+ls_seltab-low = 'SAP_ALL'.<br />
+APPEND ls_seltab TO lt_seltab.<br />
+<br />
+ls_seltab-low = 'SAP_NEW'.<br />
+APPEND ls_seltab TO lt_seltab.<br />
+<br />
+ls_seltab-low = 'S_A.ADMIN'.<br />
+APPEND ls_seltab TO lt_seltab.<br />
+<br />
+ls_seltab-low = 'S_A.CUSTOMIZ'.<br />
+APPEND ls_seltab TO lt_seltab.<br />
+<br />
+ls_seltab-low = 'S_A.DEVELOP'.<br />
+APPEND ls_seltab TO lt_seltab.<br />
+<br />
+ls_seltab-low = 'S_A.SYSTEM'.<br />
+APPEND ls_seltab TO lt_seltab.<br />
+<br />
+ls_seltab-low = 'S_A.USER'.<br />
+APPEND ls_seltab TO lt_seltab.<br />
+<br />
+" capture output from 'List of Users According to Logon Date and Password Change'<br />
+SUBMIT rsusr002<br />
+WITH SELECTION-TABLE lt_seltab<br />
+EXPORTING LIST TO MEMORY<br />
+AND RETURN.<br />
+<br />
+TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;cl_salv_bs_runtime_info=&gt;get_data_ref(&nbsp;IMPORTING&nbsp;r_data&nbsp;=&nbsp;lo_data&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;lo_data-&gt;*&nbsp;TO&nbsp;&lt;lt_data&gt;.<br />
+&nbsp;&nbsp;CATCH&nbsp;cx_salv_bs_sc_runtime_info.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;TEXT-m02&nbsp;TYPE&nbsp;'E'.<br />
+ENDTRY.<br />
+<br />
+cl_salv_bs_runtime_info=&gt;clear_all( ).<br />
+<br />
+LOOP AT lt_seltab INTO ls_seltab.<br />
+&nbsp;&nbsp;wa_profiles-profile&nbsp;=&nbsp;ls_seltab-low.<br />
+&nbsp;&nbsp;APPEND&nbsp;wa_profiles&nbsp;TO&nbsp;lt_profiles.<br />
+ENDLOOP.<br />
+<br />
+SELECT ust04~mandt AS mandt, bname, profile, ptext, langu<br />
+FROM ust04 JOIN usr11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;ust04~profile&nbsp;=&nbsp;usr11~profn<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;@lt_profiles<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;profile&nbsp;=&nbsp;@lt_profiles-profile<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;@lt_ust04.<br />
+<br />
+SELECT * FROM usr02 INTO TABLE lt_usr02.<br />
+<br />
+LOOP AT &lt;lt_data&gt; ASSIGNING  &lt;lt_tab&gt;.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;&nbsp;EXACT&nbsp;&lt;lt_tab&gt;&nbsp;TO&nbsp;wa_rsusr002&nbsp;EXPANDING&nbsp;NESTED&nbsp;TABLES.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;wa_usr02,&nbsp;wa_ust04.<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_usr02&nbsp;INTO&nbsp;wa_usr02&nbsp;WITH&nbsp;KEY&nbsp;bname&nbsp;=&nbsp;wa_rsusr002-bname&nbsp;mandt&nbsp;=&nbsp;sy-mandt.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_ust04&nbsp;INTO&nbsp;wa_ust04&nbsp;WHERE&nbsp;bname&nbsp;=&nbsp;wa_rsusr002-bname&nbsp;AND&nbsp;mandt&nbsp;=&nbsp;sy-mandt&nbsp;AND&nbsp;langu&nbsp;=&nbsp;sy-langu.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_rsusr002-profile&nbsp;=&nbsp;wa_ust04-profile.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_rsusr002-profile_text&nbsp;=&nbsp;wa_ust04-ptext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_rsusr002-uflag&nbsp;=&nbsp;wa_usr02-uflag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_rsusr002-clnt&nbsp;=&nbsp;sy-mandt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;wa_rsusr002&nbsp;TO&nbsp;lt_rsusr002.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDLOOP.<br />
+<br />
+CALL FUNCTION 'ENQUEUE_E_TABLE'<br />
+&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;mode_rstable&nbsp;&nbsp;&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_cust_table_name<br />
+&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;foreign_lock&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;system_failure&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+DELETE FROM zbw_oca_usrcmplx.<br />
+GET TIME STAMP FIELD lv_tsl.<br />
+LOOP AT lt_rsusr002 WHERE sysname IS INITIAL.<br />
+&nbsp;&nbsp;lt_rsusr002-sysname&nbsp;=&nbsp;lv_systype.<br />
+&nbsp;&nbsp;lt_rsusr002-sysid&nbsp;=&nbsp;sy-sysid.<br />
+&nbsp;&nbsp;lt_rsusr002-timestamp&nbsp;=&nbsp;lv_tsl.<br />
+&nbsp;&nbsp;MODIFY&nbsp;lt_rsusr002&nbsp;INDEX&nbsp;sy-tabix.<br />
+ENDLOOP.<br />
+<br />
+MODIFY zbw_oca_usrcmplx FROM TABLE lt_rsusr002.<br />
+<br />
+CALL FUNCTION 'DEQUEUE_E_TABLE'<br />
+&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;mode_rstable&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_cust_table_name.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer"></td>
+   </tr>
+</table>
+</body>
+</html>

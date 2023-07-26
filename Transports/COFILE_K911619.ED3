@@ -1,0 +1,31 @@
+WALCZAKJ     T /ZED3/     2   8  12   0   0   4   0   0   0  16  750   .  0   0   0   0   0 010
+#A
+#/1/                          A   G   D   C   R   7   T   -   Z RELE EX.  _   _   _   _   _ CLI
+#$PROJECT                        = ED3_P00003                    
+ED3 f 0000 20230621192801 sap-ard-195-a       ed3adm
+ED3 e 0000 20230621192804 sap-ard-195-a       ed3adm
+ED3.060 < 0000 20230621192807 sap-ard-195-a       ed3adm
+EQ3.060 < 0000 20230621192807 sap-ard-195-a       ed3adm
+ET3.060 < 0000 20230621192807 sap-ard-195-a       ed3adm
+ED3.010 E 0000 20230621192807 sap-ard-195-a       ed3adm
+ED3 H 0004 20230621192823 sap-ard-195-a       ed3adm
+ED3 A 0004 20230621192824 sap-ard-195-a       ed3adm
+ED3.060 I 0004 20230621192827 sap-ard-195-a       ed3adm
+ED3 V 0000 20230621192828 sap-ard-195-a       ed3adm
+ED3.060 R 0000 20230621192829 sap-ard-195-a       ed3adm
+ED3 G 0000 20230621192830 sap-ard-195-a       ed3adm
+ED3.060 ! 0004 20230621192830 sap-ard-195-a       ed3adm
+EQ3 H 0000 20230621192852 sap-ard-197-a       eq3adm
+EQ3 A 0004 20230621192855 sap-ard-197-a       eq3adm
+EQ3.060 I 0000 20230621192906 sap-ard-197-a       eq3adm
+EQ3 V 0000 20230621192907 sap-ard-197-a       eq3adm
+EQ3.060 R 0000 20230621192911 sap-ard-197-a       eq3adm
+EQ3 G 0000 20230621192915 sap-ard-197-a       eq3adm
+EQ3.060 ! 0004 20230621192915 sap-ard-197-a       eq3adm
+ET3 H 0000 20230621192935 sap-ard-193-a       et3adm
+ET3 A 0004 20230621192938 sap-ard-193-a       et3adm
+ET3.060 I 0000 20230621192944 sap-ard-193-a       et3adm
+ET3 V 0000 20230621192945 sap-ard-193-a       et3adm
+ET3.060 R 0000 20230621192950 sap-ard-193-a       et3adm
+ET3 G 0000 20230621192953 sap-ard-193-a       et3adm
+ET3.060 ! 0004 20230621192953 sap-ard-193-a       et3adm

@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=ISO-8859-1" />
+<title>ZBW_OCA_TRD_VCUSRVAR_REPORT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZBW_OCA_TRD_VCUSRVAR_REPORT</h2>
+<h3> Description: Privileged Access Report - CA Variant object changes (ABAP Report)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;PAR&nbsp;-&gt;&nbsp;SUIM&nbsp;CA&nbsp;Variant&nbsp;object&nbsp;changes<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+REPORT zbw_oca_trd_vcusrvar_report.<br />
+<br />
+TABLES :<br />
+&nbsp;&nbsp;e071,<br />
+&nbsp;&nbsp;e070.<br />
+<br />
+TYPES :<br />
+&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;__ty_trdetails,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sysname&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c&nbsp;LENGTH&nbsp;10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;systemid&nbsp;&nbsp;&nbsp;TYPE&nbsp;c&nbsp;LENGTH&nbsp;3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;pgmid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e071-pgmid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;object&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e071-object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;as4pos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e071-as4pos,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;obj_name&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e071-obj_name,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;trkorr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e070-trkorr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;as4text&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e07t-as4text,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;trfunction&nbsp;TYPE&nbsp;&nbsp;e070-trfunction,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;trstatus&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e070-trstatus,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;strkorr&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e070-strkorr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;as4date&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e070-as4date,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;as4time&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e070-as4time,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;as4user&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;e070-as4user,<br />
+&nbsp;&nbsp;END&nbsp;OF&nbsp;&nbsp;&nbsp;__ty_trdetails.<br />
+<br />
+<br />
+DATA :<br />
+&nbsp;&nbsp;it_trdetails&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;__ty_trdetails&nbsp;WITH&nbsp;HEADER&nbsp;LINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;NON-UNIQUE&nbsp;KEY&nbsp;pgmid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;as4pos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trkorr,<br />
+&nbsp;&nbsp;lt_swfeature&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;swfeature,<br />
+&nbsp;&nbsp;lv_systype(10)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;wa_trdetails&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__ty_trdetails,<br />
+&nbsp;&nbsp;wa_swfeature&nbsp;&nbsp;&nbsp;TYPE&nbsp;swfeature,<br />
+&nbsp;&nbsp;lo_display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_salv_display_settings,<br />
+&nbsp;&nbsp;lo_salv_table&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_salv_table.<br />
+<br />
+FIELD-SYMBOLS :<br />
+&nbsp;&nbsp;&lt;fs_trdet&gt;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__ty_trdetails.<br />
+<br />
+DATA :<br />
+&nbsp;&nbsp;it_fieldcat&nbsp;TYPE&nbsp;slis_t_fieldcat_alv,<br />
+&nbsp;&nbsp;wa_fieldcat&nbsp;TYPE&nbsp;slis_fieldcat_alv.&nbsp;&nbsp;&nbsp;"Field&nbsp;Catalog<br />
+<br />
+DATA :<br />
+&nbsp;&nbsp;lv_err_msg&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;string.<br />
+<br />
+DATA:  lv_cust_table_name TYPE tabname VALUE 'ZBW_OCA_TRDVCUSR'.<br />
+<br />
+SELECT<br />
+&nbsp;&nbsp;a~pgmid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;a~object&nbsp;&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;a~as4pos&nbsp;&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;a~obj_name&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;b~trkorr&nbsp;&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;c~as4text&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;b~trfunction,<br />
+&nbsp;&nbsp;b~trstatus&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;b~strkorr&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;b~as4date&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;b~as4time&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;b~as4user<br />
+FROM<br />
+&nbsp;&nbsp;e071&nbsp;AS&nbsp;a<br />
+&nbsp;&nbsp;INNER&nbsp;JOIN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e070&nbsp;AS&nbsp;b<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ON<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~trkorr&nbsp;=&nbsp;b~trkorr<br />
+&nbsp;&nbsp;LEFT&nbsp;JOIN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e07t&nbsp;AS&nbsp;c<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ON<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~trkorr&nbsp;=&nbsp;c~trkorr<br />
+INTO CORRESPONDING FIELDS OF TABLE @it_trdetails<br />
+WHERE<br />
+&nbsp;&nbsp;b~as4date&nbsp;BETWEEN&nbsp;'10000101'&nbsp;AND&nbsp;'99991231'<br />
+&nbsp;&nbsp;AND&nbsp;c~langu&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;AND&nbsp;a~pgmid&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'R3TR'<br />
+&nbsp;&nbsp;AND&nbsp;a~object&nbsp;&nbsp;&nbsp;=&nbsp;'CDAT'<br />
+&nbsp;&nbsp;AND&nbsp;a~obj_name&nbsp;=&nbsp;'VCUSRVAR'.<br />
+<br />
+SELECT  *  FROM swfeature INTO TABLE lt_swfeature.<br />
+SORT lt_swfeature BY mod_date.<br />
+READ TABLE lt_swfeature INTO  wa_swfeature INDEX 1.<br />
+lv_systype = wa_swfeature-name.<br />
+CLEAR: lt_swfeature.<br />
+<br />
+CALL FUNCTION 'ENQUEUE_E_TABLE'<br />
+&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;mode_rstable&nbsp;&nbsp;&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_cust_table_name<br />
+&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;foreign_lock&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;system_failure&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+DELETE FROM zbw_oca_trdvcusr.<br />
+<br />
+LOOP AT it_trdetails WHERE sysname IS INITIAL.<br />
+&nbsp;&nbsp;it_trdetails-sysname&nbsp;=&nbsp;lv_systype.<br />
+&nbsp;&nbsp;it_trdetails-systemid&nbsp;=&nbsp;sy-sysid.<br />
+&nbsp;&nbsp;MODIFY&nbsp;it_trdetails&nbsp;INDEX&nbsp;sy-tabix.<br />
+ENDLOOP.<br />
+<br />
+MODIFY zbw_oca_trdvcusr FROM TABLE it_trdetails.<br />
+<br />
+CALL FUNCTION 'DEQUEUE_E_TABLE'<br />
+&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;mode_rstable&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_cust_table_name.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer"></td>
+   </tr>
+</table>
+</body>
+</html>

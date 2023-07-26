@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=ISO-8859-1" />
+<title>ZBW_OCA_CRIT_AUT_REPORT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZBW_OCA_CRIT_AUT_REPORT</h2>
+<h3> Description: Privileged Access Report - Custom Critical Authorizations (ABAP Rep)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;ZBW_OCA_SUIM_CUSTOM_REPORT<br />
+*&---------------------------------------------------------------------*<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+REPORT ZBW_OCA_CRIT_AUT_REPORT.<br />
+<br />
+TYPES  : BEGIN OF __ty_ca,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auth_id&nbsp;&nbsp;&nbsp;TYPE&nbsp;uscraut-auth_id,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;uscrauidt-text,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-bname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name_text&nbsp;TYPE&nbsp;ususerall-name_text,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-class,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gltgv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-gltgv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gltgb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-gltgb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-accnt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ustyp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-ustyp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;__ty_ca&nbsp;,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;__ty_salv_1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sysname&nbsp;&nbsp;&nbsp;TYPE&nbsp;c&nbsp;LENGTH&nbsp;10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;systemid&nbsp;&nbsp;TYPE&nbsp;c&nbsp;LENGTH&nbsp;3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auth_id&nbsp;&nbsp;&nbsp;TYPE&nbsp;uscraut-auth_id,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;uscrauidt-text,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-bname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name_text&nbsp;TYPE&nbsp;ususerall-name_text,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-class,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gltgv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-gltgv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gltgb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-gltgb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-accnt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ustyp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ususerall-ustyp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;erdat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;xuerdat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trdat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;xuldate,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ltime&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;xultime,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uflag&nbsp;TYPE&nbsp;xuflag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;__ty_salv_1.<br />
+<br />
+FIELD-SYMBOLS  : &lt;lt_data&gt; TYPE ANY TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;lt_tab&gt;&nbsp;&nbsp;TYPE&nbsp;any.<br />
+<br />
+DATA :lo_data        TYPE REF TO data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_salv_display_settings,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_salv_table&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_salv_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_ca&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;__ty_ca&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_ca_custom&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;ZBW_OCA_CRIT_AUT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_salv_1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;__ty_salv_1&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_swfeature&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;swfeature,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_usr02&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;usr02,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_systype(10)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_tsl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;timestampl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_ca&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;__ty_ca,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_ca_custom&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZBW_OCA_CRIT_AUT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;__ty_salv_1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_swfeature&nbsp;&nbsp;&nbsp;TYPE&nbsp;swfeature,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_usr02&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;usr02.<br />
+<br />
+DATA:  lv_cust_table_name TYPE tabname VALUE 'ZBW_OCA_CRIT_AUT'.<br />
+<br />
+SELECT  *  FROM swfeature INTO TABLE lt_swfeature.<br />
+SORT lt_swfeature BY mod_date.<br />
+READ TABLE lt_swfeature INTO  wa_swfeature INDEX 1.<br />
+lv_systype = wa_swfeature-name.<br />
+CLEAR: lt_swfeature.<br />
+<br />
+cl_salv_bs_runtime_info=&gt;set(<br />
+&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;display&nbsp;&nbsp;=&nbsp;abap_false<br />
+&nbsp;&nbsp;&nbsp;metadata&nbsp;=&nbsp;abap_false<br />
+&nbsp;&nbsp;&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;abap_true<br />
+).<br />
+<br />
+CALL FUNCTION 'LIST_FREE_MEMORY'.<br />
+<br />
+SUBMIT rsusr008_009_new<br />
+WITH comb = ''<br />
+WITH auth = 'X'<br />
+WITH authvar = 'ZARDAGH_ACE_REPORTS'<br />
+WITH d_analys = 'X'<br />
+EXPORTING LIST TO MEMORY<br />
+AND RETURN.<br />
+<br />
+TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;cl_salv_bs_runtime_info=&gt;get_data_ref(&nbsp;IMPORTING&nbsp;r_data&nbsp;=&nbsp;lo_data&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;lo_data-&gt;*&nbsp;TO&nbsp;&lt;lt_data&gt;.<br />
+&nbsp;&nbsp;CATCH&nbsp;cx_salv_bs_sc_runtime_info.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;`Unable&nbsp;to&nbsp;retrieve&nbsp;ALV&nbsp;data`&nbsp;TYPE&nbsp;'E'.<br />
+ENDTRY.<br />
+<br />
+cl_salv_bs_runtime_info=&gt;clear_all( ).<br />
+<br />
+LOOP AT &lt;lt_data&gt; ASSIGNING  &lt;lt_tab&gt;.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;&nbsp;&lt;lt_tab&gt;&nbsp;TO&nbsp;lt_ca.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_ca.<br />
+ENDLOOP.<br />
+<br />
+<br />
+REFRESH &lt;lt_data&gt;.<br />
+FREE &lt;lt_data&gt;.<br />
+CLEAR lo_data.<br />
+<br />
+cl_salv_bs_runtime_info=&gt;set(<br />
+&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;display&nbsp;&nbsp;=&nbsp;abap_false<br />
+&nbsp;&nbsp;&nbsp;metadata&nbsp;=&nbsp;abap_false<br />
+&nbsp;&nbsp;&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;abap_true<br />
+).<br />
+<br />
+CALL FUNCTION 'LIST_FREE_MEMORY'.<br />
+<br />
+SUBMIT rsusr200<br />
+WITH today = 'X'<br />
+WITH valid = 'X'<br />
+WITH notvalid = 'X'<br />
+WITH locks = 'X'<br />
+WITH faillog = 'X'<br />
+WITH succlog = 'X'<br />
+WITH unused = 'X'<br />
+WITH diaguser = 'X'<br />
+WITH commuser = 'X'<br />
+WITH sysuser = 'X'<br />
+WITH servuser = 'X'<br />
+WITH refuser = 'X'<br />
+WITH defpass = 'X'<br />
+WITH initpass = 'X'<br />
+WITH nopass = 'X'<br />
+EXPORTING LIST TO MEMORY<br />
+AND RETURN.<br />
+<br />
+TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;cl_salv_bs_runtime_info=&gt;get_data_ref(&nbsp;IMPORTING&nbsp;r_data&nbsp;=&nbsp;lo_data&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;lo_data-&gt;*&nbsp;TO&nbsp;&lt;lt_data&gt;.<br />
+&nbsp;&nbsp;CATCH&nbsp;cx_salv_bs_sc_runtime_info.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;`Unable&nbsp;to&nbsp;retrieve&nbsp;ALV&nbsp;data`&nbsp;TYPE&nbsp;'E'.<br />
+ENDTRY.<br />
+<br />
+cl_salv_bs_runtime_info=&gt;clear_all( ).<br />
+<br />
+<br />
+CALL FUNCTION 'LIST_FREE_MEMORY'.<br />
+<br />
+REFRESH &lt;lt_data&gt;.<br />
+FREE &lt;lt_data&gt;.<br />
+CLEAR lo_data.<br />
+<br />
+SELECT * FROM USR02 INTO table lt_usr02.<br />
+<br />
+IF lt_ca[] IS NOT INITIAL.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&nbsp;lt_ca&nbsp;INTO&nbsp;wa_ca.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-sysname&nbsp;=&nbsp;lv_systype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-systemid&nbsp;=&nbsp;sy-sysid.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-auth_id&nbsp;=&nbsp;wa_ca-auth_id.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-text&nbsp;=&nbsp;wa_ca-text.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-bname&nbsp;=&nbsp;wa_ca-bname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-name_text&nbsp;=&nbsp;wa_ca-name_text.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-class&nbsp;=&nbsp;wa_ca-class.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-gltgv&nbsp;=&nbsp;wa_ca-gltgv.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-gltgb&nbsp;=&nbsp;wa_ca-gltgb.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-accnt&nbsp;=&nbsp;wa_ca-accnt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-ustyp&nbsp;=&nbsp;wa_ca-ustyp.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;wa_usr02.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_usr02&nbsp;INTO&nbsp;wa_usr02&nbsp;WITH&nbsp;KEY&nbsp;bname&nbsp;=&nbsp;wa_ca-bname&nbsp;mandt&nbsp;=&nbsp;sy-mandt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-erdat&nbsp;=&nbsp;wa_usr02-erdat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-trdat&nbsp;=&nbsp;wa_usr02-trdat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-ltime&nbsp;=&nbsp;wa_usr02-ltime.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_salv_1-uflag&nbsp;=&nbsp;wa_usr02-uflag.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;wa_salv_1&nbsp;TO&nbsp;lt_salv_1.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDIF.<br />
+<br />
+SORT lt_salv_1 BY auth_id bname ASCENDING.<br />
+<br />
+CALL FUNCTION 'ENQUEUE_E_TABLE'<br />
+&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;mode_rstable&nbsp;&nbsp;&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_cust_table_name<br />
+&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;foreign_lock&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;system_failure&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+DELETE FROM ZBW_OCA_CRIT_AUT.<br />
+GET TIME STAMP FIELD lv_tsl.<br />
+LOOP AT lt_salv_1 INTO wa_salv_1.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;wa_salv_1&nbsp;TO&nbsp;wa_ca_custom.<br />
+&nbsp;&nbsp;wa_ca_custom-clnt&nbsp;=&nbsp;sy-mandt.<br />
+&nbsp;&nbsp;wa_ca_custom-sysid&nbsp;=&nbsp;sy-sysid.<br />
+&nbsp;&nbsp;wa_ca_custom-timestamp&nbsp;=&nbsp;lv_tsl.<br />
+&nbsp;&nbsp;APPEND&nbsp;wa_ca_custom&nbsp;TO&nbsp;lt_ca_custom.<br />
+ENDLOOP.<br />
+MODIFY ZBW_OCA_CRIT_AUT FROM TABLE lt_ca_custom.<br />
+<br />
+CALL FUNCTION 'DEQUEUE_E_TABLE'<br />
+&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;mode_rstable&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_cust_table_name.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;Hard&nbsp;coded<br />
+*&nbsp;&nbsp;&nbsp;Unable&nbsp;to&nbsp;retrieve&nbsp;ALV&nbsp;data<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer"></td>
+   </tr>
+</table>
+</body>
+</html>
